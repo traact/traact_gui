@@ -15,5 +15,96 @@ project(${CONAN_PACKAGE_NAME}_PROJECT VERSION ${CONAN_PACKAGE_VERSION})
 
 conan_basic_setup(TARGETS)
 
-add_subdirectory(external)
-add_subdirectory(src)
+set(CMAKE_PREFIX_PATH ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR})
+
+set(TRAACT_GUI_SRC
+        src/traact_gui/main.cpp
+        src/traact_gui/TraactGuiApp.h
+        src/traact_gui/TraactGuiApp.cpp
+        src/traact_gui/windows/PatternTree.h
+        src/traact_gui/windows/PatternTree.cpp
+        src/traact_gui/windows/SRG_DFG_Window.h
+        src/traact_gui/windows/SRG_DFG_Window.cpp
+
+
+
+
+        src/traact_gui/file_manager.cpp
+        src/traact_gui/file_manager.h
+        src/traact_gui/opengl_shader.cpp
+        src/traact_gui/opengl_shader.h
+
+        src/assets/simple-shader.vs
+        src/assets/simple-shader.fs
+        src/traact_gui/ImGuiUtils.h
+        src/traact_gui/DataflowFile.cpp
+        src/traact_gui/DataflowFile.h
+        src/util/fileutil.h
+        src/traact_gui/NodeEditorElements.h
+        src/traact_gui/NodeEditorElements.cpp)
+
+set(IMGUI_BINDING_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/imgui_bindings/imgui_impl_glfw.h
+        ${CMAKE_CURRENT_BINARY_DIR}/imgui_bindings/imgui_impl_glfw.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/imgui_bindings/imgui_impl_opengl3.h
+        ${CMAKE_CURRENT_BINARY_DIR}/imgui_bindings/imgui_impl_opengl3.cpp)
+
+set(IMGUI_EXTERNAL_SOURCES src/external/ImFileDialog/ImFileDialog.h
+        src/external/ImFileDialog/ImFileDialog.cpp
+        src/external/imgui-node-editor/utilities/widgets.h
+        src/external/imgui-node-editor/utilities/widgets.cpp
+        src/external/imgui-node-editor/utilities/drawing.h
+        src/external/imgui-node-editor/utilities/drawing.cpp
+        src/external/imgui-node-editor/crude_json.cpp
+        src/external/imgui-node-editor/crude_json.h
+        src/external/imgui-node-editor/imgui_bezier_math.h
+        src/external/imgui-node-editor/imgui_bezier_math.inl
+        src/external/imgui-node-editor/imgui_canvas.cpp
+        src/external/imgui-node-editor/imgui_canvas.cpp
+        src/external/imgui-node-editor/imgui_canvas.h
+        src/external/imgui-node-editor/imgui_canvas.h
+        src/external/imgui-node-editor/imgui_extra_math.h
+        src/external/imgui-node-editor/imgui_extra_math.inl
+        src/external/imgui-node-editor/imgui_node_editor_api.cpp
+        src/external/imgui-node-editor/imgui_node_editor_internal.h
+        src/external/imgui-node-editor/imgui_node_editor_internal.inl
+        src/external/imgui-node-editor/imgui_node_editor.cpp
+        src/external/imgui-node-editor/imgui_node_editor.h)
+
+#find_package(imgui CONFIG)
+#find_package(glfw3 CONFIG)
+#find_package(glew CONFIG)
+
+#add_subdirectory(external)
+#add_subdirectory(src)
+
+add_executable( ${CONAN_PACKAGE_NAME}
+        ${TRAACT_GUI_SRC}
+        ${IMGUI_BINDING_SOURCES}
+        ${IMGUI_EXTERNAL_SOURCES})
+
+
+add_custom_command(TARGET ${CONAN_PACKAGE_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/src/assets/simple-shader.vs ${CMAKE_CURRENT_BINARY_DIR}/bin
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/src/assets/simple-shader.fs ${CMAKE_CURRENT_BINARY_DIR}/bin
+        )
+
+target_compile_definitions(${CONAN_PACKAGE_NAME} PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
+
+conan_target_link_libraries(${CONAN_PACKAGE_NAME} stdc++fs)
+#target_link_libraries(${CONAN_PACKAGE_NAME} imgui::imgui GLEW::glew_s glfw::glfw)
+
+
+set_target_properties(${CONAN_PACKAGE_NAME} PROPERTIES VERSION ${CONAN_PACKAGE_VERSION})
+#set_target_properties(${CONAN_PACKAGE_NAME} PROPERTIES PUBLIC_HEADER "${LIB_HEADERS}")
+
+target_include_directories(${CONAN_PACKAGE_NAME} PUBLIC
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/imgui_bindings>
+        ${CONAN_INCLUDE_DIRS_NLOHMANN_JSON}
+        )
+target_include_directories(${CONAN_PACKAGE_NAME} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_BINARY_DIR}/
+        )

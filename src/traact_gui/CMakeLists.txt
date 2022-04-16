@@ -1,11 +1,11 @@
 add_imgui_executable(traact_gui
         main.cpp
-        utilities/builders.h
-        utilities/drawing.h
-        utilities/widgets.h
-        utilities/builders.cpp
-        utilities/drawing.cpp
-        utilities/widgets.cpp
+        ../external/imgui-node-editor/utilities/builders.h
+        ../external/imgui-node-editor/utilities/drawing.h
+        ../external/imgui-node-editor/utilities/widgets.h
+        ../external/imgui-node-editor/utilities/builders.cpp
+        ../external/imgui-node-editor/utilities/drawing.cpp
+        ../external/imgui-node-editor/utilities/widgets.cpp
         windows/PatternTree.h
         windows/PatternTree.cpp
         TraactGuiApp.h

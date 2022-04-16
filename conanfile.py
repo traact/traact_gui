@@ -17,6 +17,7 @@ class Traact(ConanFile):
     generators = "cmake", "traact_virtualrunenv_generator"
     settings = "os", "compiler", "build_type", "arch"
     compiler = "cppstd"
+    keep_imports = True
     options = {
         "shared": [True, False],
     }
@@ -34,6 +35,18 @@ class Traact(ConanFile):
         self.requires("traact_vision/%s@camposs/stable" % self.version)
         self.requires("traact_serialization/%s@camposs/stable" % self.version)
         self.requires("nlohmann_json/3.7.3")
+        self.requires("glfw/3.3.4")
+        self.requires("glew/2.2.0")
+        self.requires("imgui/1.83")
+        self.requires("ghc-filesystem/1.5.8")
+        self.requires("imguizmo/cci.20210720")
+        self.requires("implot/0.11")
+        self.requires("stb/cci.20210713")
+        self.requires("nodesoup/cci.20200905")
+
+    def imports(self):
+        self.copy(src="./res/bindings", pattern="imgui_impl_glfw.*", dst="imgui_bindings", root_package='imgui')
+        self.copy(src="./res/bindings", pattern="imgui_impl_opengl3.*", dst="imgui_bindings", root_package='imgui')
         
 
 

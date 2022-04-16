@@ -36,6 +36,9 @@
 #include <string>
 #include <map>
 #include <traact/pattern/instance/GraphInstance.h>
+#include <traact_gui/DataflowFile.h>
+#include <util/fileutil.h>
+#include <traact/util/RingBuffer.h>
 
 namespace traact::gui {
 
@@ -43,27 +46,41 @@ namespace traact::gui {
     public:
         TraactGuiApp(const std::string &configFile);
 
-        virtual ~TraactGuiApp();
+        ~TraactGuiApp();
 
-        std::vector<std::string> & GetRecentFiles();
+        void OnFrame();
 
         void NewFile();
-        void OpenFile(std::string file);
-        std::vector<std::string> OpenFiles();
+        void NewFile(const std::string& dataflow_json);
+        void OpenFile(fs::path file);
+        const std::vector<std::string> & OpenFiles();
         void CloseFile(std::string file);
         void CloseAll();
-
-        std::vector<pattern::Pattern::Ptr> GetAvailablePatterns();
-        const std::map<std::string, pattern::instance::GraphInstance::Ptr> GetGraphInstances();
 
 
     private:
         std::string config_file_;
-        std::vector<std::string> recent_files_;
+        buffers::ring_buffer<std::string, 5> recent_files_;
         std::vector<std::string> open_files_;
-        std::map<std::string, std::string> loaded_graph_files_;
-        std::map<std::string, pattern::instance::GraphInstance::Ptr> loaded_graphs_;
+
         std::vector<pattern::Pattern::Ptr> available_patterns_;
+
+        std::vector<DataflowFile*> dataflow_files_;
+        DataflowFile* current_dataflow_{nullptr};
+        DataflowFile* pending_dataflow_{nullptr};
+
+        void MenuBar();
+
+        void DrawLeftPanel(int width, int height);
+        void DrawRightPanel(int width, int height);
+
+        void DrawPatternPanel();
+        void DrawDetailsPanel();
+
+        void SaveConfig();
+        void LoadConfig();
+
+
 
     };
 }

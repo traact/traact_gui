@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-#project(imgui-node-editor)
+project(imgui-node-editor)
 
 # Define IMGUI_NODE_EDITOR_ROOT_DIR pointing to project root directory
 #get_filename_component(IMGUI_NODE_EDITOR_ROOT_DIR ${CMAKE_SOURCE_DIR} ABSOLUTE CACHE)
@@ -11,6 +11,9 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Point CMake where to look for module files.
 list(APPEND CMAKE_MODULE_PATH ${IMGUI_NODE_EDITOR_ROOT_DIR}/misc/cmake-modules)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR}/../)
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_CURRENT_BINARY_DIR}/../)
+
 
 # Node editor use C++14
 set(CMAKE_CXX_STANDARD            17)

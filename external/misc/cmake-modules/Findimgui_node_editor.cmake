@@ -8,7 +8,6 @@ endif()
 #add_subdirectory(${_imgui_node_editor_SourceDir} ${_imgui_node_editor_BinaryDir})
 
 find_package(imgui REQUIRED)
-find_package(stb_image REQUIRED)
 
 set(_imgui_node_editor_Sources
     ${IMGUI_NODE_EDITOR_ROOT_DIR}/crude_json.cpp
@@ -26,8 +25,6 @@ set(_imgui_node_editor_Sources
     ${IMGUI_NODE_EDITOR_ROOT_DIR}/imgui_node_editor_internal.inl
     ${IMGUI_NODE_EDITOR_ROOT_DIR}/imgui_node_editor.cpp
     ${IMGUI_NODE_EDITOR_ROOT_DIR}/imgui_node_editor.h
-    ${IMGUI_NODE_EDITOR_ROOT_DIR}/ImFileDialog.h
-    ${IMGUI_NODE_EDITOR_ROOT_DIR}/ImFileDialog.cpp
     ${IMGUI_NODE_EDITOR_ROOT_DIR}/misc/imgui_node_editor.natvis
 )
 
@@ -40,7 +37,6 @@ target_include_directories(imgui_node_editor PUBLIC
 )
 
 target_link_libraries(imgui_node_editor PUBLIC imgui)
-target_link_libraries(imgui_node_editor PRIVATE stb_image)
 
 source_group(TREE ${IMGUI_NODE_EDITOR_ROOT_DIR} FILES ${_imgui_node_editor_Sources})
 

@@ -1,151 +1,168 @@
-#include <application.h>
-
-#include <imgui_node_editor.h>
-
-
-
+#include <imgui.h>
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
-
-#include <string>
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#include "opengl_shader.h"
+#include "file_manager.h"
+#include <stdio.h>
+#include <iostream>
 #include <vector>
-#include <map>
-#include <algorithm>
-#include <utility>
-#include <imgui_node_editor_internal.h>
-#include "TraactGuiApp.h"
-#include "windows/PatternTree.h"
-
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
 
+#include <implot.h>
+#include <ImGuizmo.h>
+#include <ImCurveEdit.h>
+#include <ImSequencer.h>
+#include <ImZoomSlider.h>
+#include <GraphEditor.h>
+#include <external/ImFileDialog/ImFileDialog.h>
+# include <external/imgui-node-editor/imgui_node_editor.h>
+#include <spdlog/spdlog.h>
+#include "TraactGuiApp.h"
 
 
 namespace ed = ax::NodeEditor;
-
-using namespace ax;
+static void glfw_error_callback(int error, const char *description)
+{
+    spdlog::error( "Glfw Error {0}: {1}\n", error, description);
+}
 using namespace traact::gui;
 
 static TraactGuiApp traact_app("traact_gui.json");
-static PatternTree pattern_tree(&traact_app);
+//static ed::EditorContext* g_Context = nullptr;
 
-static inline ImRect ImGui_GetItemRect()
+int main(int argc, char** argv)
 {
-    return ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
-}
+// Setup window
+    glfwSetErrorCallback(glfw_error_callback);
+    if (!glfwInit())
+        return 1;
 
-static inline ImRect ImRect_Expanded(const ImRect& rect, float x, float y)
-{
-    auto result = rect;
-    result.Min.x -= x;
-    result.Min.y -= y;
-    result.Max.x += x;
-    result.Max.y += y;
-    return result;
-}
+    // Decide GL+GLSL versions
+#if __APPLE__
+    // GL 3.2 + GLSL 150
+	const char *glsl_version = "#version 150";
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);		   // Required on Mac
+#else
+    // GL 3.0 + GLSL 130
+    const char *glsl_version = "#version 130";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+#endif
 
+    // Create window with graphics context
+    GLFWwindow *window = glfwCreateWindow(1280, 720, "Traact GUI", NULL, NULL);
+    if (window == NULL)
+        return 1;
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1); // Enable vsync
 
-const char* Application_GetName()
-{
-    return "Traact GUI";
-}
+    bool err = glewInit() != GLEW_OK;
 
-void Application_Initialize()
-{
-    ed::Config config;
-
-    config.SettingsFile = "traact_gui.json";
-
-
-//    config.LoadNodeSettings = [](ed::NodeId nodeId, char* data, void* userPointer) -> size_t
-//    {
-//        auto node = FindNode(nodeId);
-//        if (!node)
-//            return 0;
-//
-//        if (data != nullptr)
-//            memcpy(data, node->State.data(), node->State.size());
-//        return node->State.size();
-//    };
-//
-//    config.SaveNodeSettings = [](ed::NodeId nodeId, const char* data, size_t size, ed::SaveReasonFlags reason, void* userPointer) -> bool
-//    {
-//        auto node = FindNode(nodeId);
-//        if (!node)
-//            return false;
-//
-//        node->State.assign(data, size);
-//
-//        TouchNode(nodeId);
-//
-//        return true;
-//    };
-
-
-    auto& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-
-}
-
-void Application_Finalize()
-{
-
-}
-
-
-void Application_Frame()
-{
-
-    auto& io = ImGui::GetIO();
-
-
-    if (ImGui::BeginMainMenuBar())
+    if (err)
     {
-        if (ImGui::BeginMenu("File"))
-        {
-            if (ImGui::MenuItem("New")) {}
-            if (ImGui::MenuItem("Open", "Ctrl+O")) {}
-            if (ImGui::BeginMenu("Open Recent"))
-            {
-                for(const auto& file_name : traact_app.GetRecentFiles()){
-                    if(ImGui::MenuItem(file_name.c_str())){
-                        traact_app.OpenFile(file_name);
-                    }
-                }
-                ImGui::EndMenu();
-            }
-            if (ImGui::MenuItem("Save", "Ctrl+S")) {}
-            if (ImGui::MenuItem("Save As..")) {}
-
-            ImGui::Separator();
-
-            if (ImGui::MenuItem("Quit", "Alt+F4")) {}
-
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Edit"))
-        {
-            if (ImGui::MenuItem("Undo", "CTRL+Z", false, false)) {}
-            if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}
-//            ImGui::Separator();
-//            if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-//            if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-//            if (ImGui::MenuItem("Paste", "CTRL+V")) {}
-            ImGui::EndMenu();
-        }
-        ImGui::EndMainMenuBar();
+        fprintf(stderr, "Failed to initialize OpenGL loader!\n");
+        return 1;
     }
 
-    pattern_tree.Draw();
+    int screen_width, screen_height;
+    glfwGetFramebufferSize(window, &screen_width, &screen_height);
+    glViewport(0, 0, screen_width, screen_height);
 
 
-    ImGui::ShowDemoWindow();
+    //---------------------------------
+
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImPlot::CreateContext();
+    //g_Context = ed::CreateEditor();
+
+
+    // ImFileDialog requires you to set the CreateTexture and DeleteTexture
+    ifd::FileDialog::Instance().CreateTexture = [](uint8_t* data, int w, int h, char fmt) -> void* {
+        GLuint tex;
+
+        glGenTextures(1, &tex);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, (fmt == 0) ? GL_BGRA : GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        return (void*)tex;
+    };
+    ifd::FileDialog::Instance().DeleteTexture = [](void* tex) {
+        GLuint texID = (GLuint)((uintptr_t)tex);
+        glDeleteTextures(1, &texID);
+    };
+    //----------------------------
+
+    ImGuiIO &io = ImGui::GetIO();
+
+    // Setup Platform/Renderer bindings
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+
+    while (!glfwWindowShouldClose(window))
+    {
+        glfwPollEvents();
+        glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // feed inputs to dear imgui, start new frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        //ed::SetCurrentEditor(g_Context);
+
+        static ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
+
+        // We demonstrate using the full viewport area or the work area (without menu-bars, task-bars etc.)
+        // Based on your use case you may want one of the other.
+        const ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+
+        ImGui::Begin("MainWindow", 0, flags);
+        traact_app.OnFrame();
+        ImGui::End();
 
 
 
 
-    //ImGui::ShowMetricsWindow();
+
+        // Render dear imgui into screen
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        int display_w, display_h;
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+        glfwSwapBuffers(window);
+    }
+
+    // Cleanup
+    //ed::DestroyEditor(g_Context);
+    ImPlot::DestroyContext();
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
+
+    return 0;
 }
-
-
