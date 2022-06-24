@@ -29,20 +29,19 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 
-#include "NodeEditorElements.h"
-#include <spdlog/spdlog.h>
+#ifndef TRAACTMULTI_EDITORUTILS_H
+#define TRAACTMULTI_EDITORUTILS_H
 
-#include <utility>
-#include <external/imgui-node-editor/imgui_node_editor.h>
+#include <imgui.h>
 
-namespace traact::gui {
+namespace traact::gui::editor::utils {
+    int GetNextId();
 
+    //void ShowLabel(const char* label, ImColor color);
 
-
-
-
-
+}
 
 
 
-};
+
+#endif //TRAACTMULTI_EDITORUTILS_H

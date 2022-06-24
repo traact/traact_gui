@@ -37,11 +37,6 @@
 
 #include "ImGuiUtils.h"
 #include <implot.h>
-#include <ImGuizmo.h>
-#include <ImCurveEdit.h>
-#include <ImSequencer.h>
-#include <ImZoomSlider.h>
-#include <GraphEditor.h>
 #include <external/ImFileDialog/ImFileDialog.h>
 #include <external/imgui-node-editor/imgui_node_editor.h>
 
@@ -459,7 +454,7 @@ void traact::gui::TraactGuiApp::DrawPatternPanel() {
             {
 
 
-                for(const auto& tmp : dataflow->component_graph_->getAll()){
+                for(const auto& tmp : dataflow->graph_editor_.Graph->getAll()){
                     ImGui::Text(tmp->getPatternName().c_str());
                 }
                 ImGui::TreePop();
@@ -510,7 +505,7 @@ void traact::gui::TraactGuiApp::DrawDetailsPanel() {
         //ImGui::InputText()
         static char password[64] = "password123";
         if(ImGui::InputText("password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_EnterReturnsTrue)) {
-          current_dataflow_->component_graph_->name = password;
+          current_dataflow_->graph_editor_.Graph->name = password;
         };
         ImGui::Text("%s",current_dataflow_->GetName());
     }

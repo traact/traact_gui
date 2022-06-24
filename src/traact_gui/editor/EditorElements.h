@@ -29,20 +29,28 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 
-#include "NodeEditorElements.h"
-#include <spdlog/spdlog.h>
+#ifndef TRAACTMULTI_EDITORELEMENTS_H
+#define TRAACTMULTI_EDITORELEMENTS_H
 
-#include <utility>
-#include <external/imgui-node-editor/imgui_node_editor.h>
-
-namespace traact::gui {
+#include "DFGElements.h"
+#include "SRGElements.h"
 
 
+namespace traact::gui::editor {
+
+    struct EditorPattern {
+        typedef typename std::shared_ptr<EditorPattern> Ptr;
+        explicit EditorPattern(pattern::instance::PatternInstance::Ptr patternInstance);
+        pattern::instance::PatternInstance::Ptr Pattern;
+        DFGNode::Ptr DfgNode;
+
+        std::vector<SRGNode::Ptr> SrgNodes;
+        std::vector<SRGEdge::Ptr> SrgConnections;
+    };
 
 
 
+}
 
 
-
-
-};
+#endif //TRAACTMULTI_EDITORELEMENTS_H

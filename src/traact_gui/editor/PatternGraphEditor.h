@@ -1,0 +1,83 @@
+/*  BSD 3-Clause License
+ *
+ *  Copyright (c) 2020, FriederPankratz <frieder.pankratz@gmail.com>
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ *
+ *  1. Redistributions of source code must retain the above copyright notice, this
+ *     list of conditions and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *
+ *  3. Neither the name of the copyright holder nor the names of its
+ *     contributors may be used to endorse or promote products derived from
+ *     this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**/
+
+#ifndef TRAACTMULTI_PATTERNGRAPHEDITOR_H
+#define TRAACTMULTI_PATTERNGRAPHEDITOR_H
+
+#include "SRGElements.h"
+#include "DFGElements.h"
+#include "EditorElements.h"
+#include <traact/pattern/instance/GraphInstance.h>
+
+namespace traact::gui::editor {
+
+    struct PatternGraphEditor {
+        pattern::instance::GraphInstance::Ptr Graph;
+        std::vector<EditorPattern::Ptr> Patterns;
+
+        std::vector<DFGLink::Ptr> DfgConnections;
+
+        std::vector<SRGMergedNode::Ptr> SrgMergedNodes;
+        std::vector<SRGMergedEdge::Ptr> SrgMergedEdges;
+
+        void CreateNodes();
+        void CreateConnections();
+        const DFGPin::Ptr FindDFGOutputPin(const pattern::instance::ComponentID_PortName &port);
+
+        DFGPin::Ptr FindPin(ax::NodeEditor::PinId id);
+        DFGNode::Ptr FindNode(ax::NodeEditor::NodeId id);
+
+        DFGLink::Ptr FindLink(ax::NodeEditor::LinkId id);
+        bool IsPinLinked(ax::NodeEditor::PinId id);
+
+        std::optional<std::string> CanCreateLink(DFGPin::Ptr startPin, DFGPin::Ptr endPin);
+
+        void ConnectPins(ax::NodeEditor::PinId startPin, ax::NodeEditor::PinId endPin);
+        void DisconnectPin(ax::NodeEditor::LinkId id);
+        void DisconnectPin(ax::NodeEditor::PinId endPin);
+
+        void DeleteNode(ax::NodeEditor::NodeId id);
+
+        EditorPattern::Ptr  CreatePatternInstance(pattern::Pattern::Ptr pattern);
+
+        void UpdateSRGGraph();
+
+        std::optional<std::string> CanMergeNodes(ax::NodeEditor::NodeId node1, ax::NodeEditor::NodeId node2);
+        SRGMergedNode::Ptr MergeNodes(ax::NodeEditor::NodeId node1, ax::NodeEditor::NodeId node2);
+
+        SRGMergedNode::Ptr FindSrgMergeNode(ax::NodeEditor::NodeId id);
+        SRGNode::Ptr FindSrgNode(ax::NodeEditor::NodeId id);
+        void SplitNode(ax::NodeEditor::NodeId id);
+    };
+}
+
+
+#endif //TRAACTMULTI_PATTERNGRAPHEDITOR_H

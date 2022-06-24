@@ -42,7 +42,20 @@ set(TRAACT_GUI_SRC
         src/traact_gui/DataflowFile.h
         src/util/fileutil.h
         src/traact_gui/NodeEditorElements.h
-        src/traact_gui/NodeEditorElements.cpp)
+        src/traact_gui/NodeEditorElements.cpp
+
+        src/traact_gui/editor/DFGElements.h
+        src/traact_gui/editor/DFGElements.cpp
+        src/traact_gui/editor/SRGElements.h
+        src/traact_gui/editor/SRGElements.cpp
+        src/traact_gui/editor/EditorUtils.h
+        src/traact_gui/editor/EditorUtils.cpp
+        src/traact_gui/editor/EditorElements.h
+        src/traact_gui/editor/EditorElements.cpp
+        src/traact_gui/editor/PatternGraphEditor.cpp
+        src/traact_gui/editor/PatternGraphEditor.h
+        src/traact_gui/editor/JsonEditorSerialization.h
+        src/traact_gui/editor/JsonEditorSerialization.cpp)
 
 set(IMGUI_BINDING_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/imgui_bindings/imgui_impl_glfw.h
         ${CMAKE_CURRENT_BINARY_DIR}/imgui_bindings/imgui_impl_glfw.cpp

@@ -12,11 +12,11 @@
 #include <GLFW/glfw3.h>
 
 #include <implot.h>
-#include <ImGuizmo.h>
-#include <ImCurveEdit.h>
-#include <ImSequencer.h>
-#include <ImZoomSlider.h>
-#include <GraphEditor.h>
+//#include <ImGuizmo.h>
+//#include <ImCurveEdit.h>
+//#include <ImSequencer.h>
+//#include <ImZoomSlider.h>
+//#include <GraphEditor.h>
 #include <external/ImFileDialog/ImFileDialog.h>
 # include <external/imgui-node-editor/imgui_node_editor.h>
 #include <spdlog/spdlog.h>
@@ -100,7 +100,8 @@ int main(int argc, char** argv)
         glGenerateMipmap(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, 0);
 
-        return (void*)tex;
+        //return (void*)tex;
+        return (void*)((uintptr_t)tex);
     };
     ifd::FileDialog::Instance().DeleteTexture = [](void* tex) {
         GLuint texID = (GLuint)((uintptr_t)tex);

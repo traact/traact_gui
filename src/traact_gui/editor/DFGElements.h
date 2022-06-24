@@ -29,20 +29,67 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 
-#include "NodeEditorElements.h"
+#ifndef TRAACTMULTI_DFGELEMENTS_H
+#define TRAACTMULTI_DFGELEMENTS_H
+
 #include <spdlog/spdlog.h>
 
 #include <utility>
 #include <external/imgui-node-editor/imgui_node_editor.h>
+#include <traact/pattern/instance/PatternInstance.h>
 
-namespace traact::gui {
+namespace traact::gui::editor {
+
+    struct DFGLink
+    {
+        typedef typename std::shared_ptr<DFGLink> Ptr;
+        ax::NodeEditor::LinkId ID;
+
+        ax::NodeEditor::PinId StartPinID;
+        ax::NodeEditor::PinId EndPinID;
+
+        ImColor Color;
+
+        DFGLink(ax::NodeEditor::PinId startPinId, ax::NodeEditor::PinId endPinId);
+    };
 
 
 
+    struct DFGNode;
 
+    struct DFGPin {
+        typedef typename std::shared_ptr<DFGPin> Ptr;
+        ax::NodeEditor::PinId ID;
+        DFGNode *ParentNode;
 
+        pattern::instance::PortInstance::Ptr TraactPort;
 
+        DFGPin(pattern::instance::PortInstance::Ptr port, DFGNode* node);
+    };
 
+    struct DFGNode {
+        typedef typename std::shared_ptr<DFGNode> Ptr;
+        ax::NodeEditor::NodeId ID;
+        pattern::instance::PatternInstance::Ptr Pattern;
 
+        std::vector <DFGPin::Ptr> Inputs;
+        std::vector <DFGPin::Ptr> Outputs;
 
-};
+        ImVec2 Position;
+
+        void SavePosition();
+        void RestorePosition();
+
+        ImVec2 Size;
+        std::size_t max_output_name_length;
+
+        std::size_t OutputWeight;
+        std::size_t InputWeight;
+
+        DFGNode(const pattern::instance::PatternInstance::Ptr& pattern);
+        void UpdateOutputWeight();
+        void UpdateInputWeight();
+    };
+}
+
+#endif //TRAACTMULTI_DFGELEMENTS_H

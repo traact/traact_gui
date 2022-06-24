@@ -38,7 +38,7 @@
 #include <traact/traact.h>
 #include <traact/facade/Facade.h>
 #include <traact/util/RingBuffer.h>
-#include <traact_gui/NodeEditorElements.h>
+#include <traact_gui/editor/PatternGraphEditor.h>
 
 namespace traact::gui {
 
@@ -77,23 +77,28 @@ namespace traact::gui {
         ax::NodeEditor::EditorContext* context_dfg_ = nullptr;
 
         std::shared_ptr<traact::facade::Facade> facade_;
-        DefaultInstanceGraphPtr component_graph_;
-        PatternGraphEditor graph_editor_;
+        //DefaultInstanceGraphPtr component_graph_;
+        editor::PatternGraphEditor graph_editor_;
 
         ax::NodeEditor::NodeId contextNodeId{0};
         ax::NodeEditor::LinkId contextLinkId{0};
         ax::NodeEditor::PinId  contextPinId{0};
         bool createNewNode{false};
-        Pin::Ptr newNodeLinkPin{nullptr};
-        Pin::Ptr newLinkPin{nullptr};
+        editor::DFGPin::Ptr newNodeLinkPin{nullptr};
+        editor::DFGPin::Ptr newLinkPin{nullptr};
+
+        //srg
+        ax::NodeEditor::NodeId draggedNodeId{ax::NodeEditor::NodeId::Invalid};
+        //----
 
         void BuildNodes();
         void LayoutDFGNodes();
         void LayoutDFGNodesFromSinks();
         void LayoutDFGNodesNodeSoup();
         void LayoutSRGNodes();
+        void LayoutSRGNode(editor::EditorPattern::Ptr pattern);
 
-        ImVec2 GetCanvasMousePosition();
+
 
         ImVec2 CurrentEditorSize;
         ImVec2 CurrentEditorPos;

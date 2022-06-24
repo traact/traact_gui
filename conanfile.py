@@ -39,7 +39,7 @@ class Traact(ConanFile):
         self.requires("glew/2.2.0")
         self.requires("imgui/1.83")
         self.requires("ghc-filesystem/1.5.8")
-        self.requires("imguizmo/cci.20210720")
+        #self.requires("imguizmo/cci.20210720")
         self.requires("implot/0.11")
         self.requires("stb/cci.20210713")
         self.requires("nodesoup/cci.20200905")
