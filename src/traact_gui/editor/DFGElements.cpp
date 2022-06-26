@@ -38,23 +38,24 @@ namespace traact::gui::editor {
     {
     }
 
-    DFGPin::DFGPin(pattern::instance::PortInstance::Ptr port, DFGNode* node) :
+    DFGPin::DFGPin(const pattern::instance::PortInstance * port, DFGNode *node) :
             ID(utils::GetNextId()),TraactPort(port), ParentNode(node){
     }
 
     DFGNode::DFGNode(const pattern::instance::PatternInstance::Ptr& pattern) :
             ID(utils::GetNextId()), Pattern(pattern), Size(0, 0) {
-        Inputs.reserve(Pattern->consumer_ports.size());
-        for (auto& port : Pattern->consumer_ports) {
-            Inputs.emplace_back(std::make_shared<DFGPin>( &port, this));
+
+        Inputs.reserve(Pattern->getConsumerPorts(0).size());
+        for (const auto& port : Pattern->getConsumerPorts(0)) {
+            Inputs.emplace_back(std::make_shared<DFGPin>( port, this));
         }
 
         max_output_name_length = 0;
 
-        Outputs.reserve(Pattern->producer_ports.size());
-        for (auto& port : Pattern->producer_ports) {
-            max_output_name_length = std::max(max_output_name_length, port.getName().length());
-            Outputs.emplace_back(std::make_shared<DFGPin>(&port, this));
+        Outputs.reserve(Pattern->getProducerPorts(0).size());
+        for (auto& port : Pattern->getProducerPorts(0)) {
+            max_output_name_length = std::max(max_output_name_length, port->getName().length());
+            Outputs.emplace_back(std::make_shared<DFGPin>(port, this));
         }
     }
 
@@ -80,4 +81,7 @@ namespace traact::gui::editor {
     void DFGNode::RestorePosition() {
         ax::NodeEditor::SetNodePosition(ID, Position);
     }
+const std::string &DFGNode::getName() const {
+    return Pattern->instance_id;
+}
 }

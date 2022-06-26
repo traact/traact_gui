@@ -53,7 +53,9 @@ static inline ImRect ImGui_GetItemRect()
 
 namespace traact::gui {
 
-    DataflowFile::DataflowFile(std::string name) {
+    DataflowFile::DataflowFile(std::string name,
+                               SelectedTraactElement &t_selected_traact_element)
+        : selected_traact_element(t_selected_traact_element) {
         open = openPrev = true;
         dirty = true;
         wantSave = wantClose = false;
@@ -61,10 +63,12 @@ namespace traact::gui {
         context_dfg_ = ed::CreateEditor();
         graph_editor_.Graph = std::make_shared<DefaultInstanceGraph>(std::move(name));
         facade_ = std::make_shared<facade::DefaultFacade>();
-        BuildNodes();
+        buildNodes();
     }
 
-    DataflowFile::DataflowFile(fs::path file) : filepath(file){
+    DataflowFile::DataflowFile(fs::path file,
+                               SelectedTraactElement &t_selected_traact_element)
+        : filepath(file), selected_traact_element(t_selected_traact_element) {
         open = openPrev = true;
         dirty = false;
         wantSave = wantClose = false;
@@ -81,10 +85,12 @@ namespace traact::gui {
 
         ns::from_json(json_graph, graph_editor_);
 
-        BuildNodes();
+        buildNodes();
     }
 
-    DataflowFile::DataflowFile(nlohmann::json graph) {
+    DataflowFile::DataflowFile(nlohmann::json graph,
+                               SelectedTraactElement &t_selected_traact_element)
+        : selected_traact_element(t_selected_traact_element) {
         open = openPrev = true;
         dirty = false;
         wantSave = wantClose = false;
@@ -95,7 +101,7 @@ namespace traact::gui {
 
         ns::from_json(graph, graph_editor_);
         graph_editor_.Graph->name = graph_editor_.Graph->name + " (copy)";
-        BuildNodes();
+        buildNodes();
     }
 
     DataflowFile::~DataflowFile() {
@@ -103,58 +109,41 @@ namespace traact::gui {
         ed::DestroyEditor(context_dfg_);
     }
 
-    void DataflowFile::Draw(int width, int height) {
+    void DataflowFile::draw() {
         ImGui::PushID(this);
 
 
         if (ImGui::BeginTabBar("##srg_dfg_tabs")) {
             if(ImGui::BeginTabItem("Spatial Relationship Graph##srg_tab")){
-                DrawSrgPanel(width, height);
+                drawSrgPanel();
                 ImGui::EndTabItem();
             }
             if(ImGui::BeginTabItem("Dataflow Graph##dft_tab")){
-                DrawDfgPanel(width, height);
+                drawDfgPanel();
                 ImGui::EndTabItem();
             }
 
             ImGui::EndTabBar();
         }
 
-//        static float srgHeight  = 600.0f;
-//        static float dfgHeight = 400.0f;
-//
-//        Splitter("##SplitterRight",false, 4.0f, &srgHeight, &dfgHeight, 50.0f, 50.0f);
-//        ImGui::BeginChild("right", ImVec2(width, srgHeight+dfgHeight+4));
-//
-//        ImGui::BeginChild("right up", ImVec2(width, srgHeight+4));
-//
-//        ImGui::EndChild();
-//
-//        ImGui::BeginChild("right down");
-//        DrawDfgPanel(dataflow, width, dfgHeight);
-//        ImGui::EndChild();
-//        ImGui::EndChild();
-
-       // ImGui::TextWrapped("fsdfsdf  sadfased fsdfsdf  sadfased fsdfsdf  sadfased fsdfsdf  sadfased fsdfsdf  sadfased fsdfsdf  sadfased fsdfsdf  sadfased fsdfsdf  sadfased ");
-
 
         ImGui::PopID();
     }
 
-    void DataflowFile::DrawContextMenu() {
+    void DataflowFile::drawContextMenu() {
         if (!ImGui::BeginPopupContextItem())
             return;
 
         char buf[256];
-        sprintf(buf, "Save %s", GetName());
+        sprintf(buf, "Save %s", getName());
         if (ImGui::MenuItem(buf, "CTRL+S", false, open))
-            DoQueueSave();
+            doQueueSave();
         if (ImGui::MenuItem("Close", "CTRL+W", false, open))
-            DoQueueClose();
+            doQueueClose();
         ImGui::EndPopup();
     }
 
-    void DataflowFile::DrawSrgPanel(int width, int height) {
+    void DataflowFile::drawSrgPanel() {
         ed::SetCurrentEditor(context_srg_);
         ed::Begin("srg_editor");
 
@@ -233,7 +222,7 @@ namespace traact::gui {
                 } else {
                     ShowLabel("Merge Nodes", ImColor(32, 45, 32, 180), true);
                     if(ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
-                        SaveState();
+                        saveState();
                         auto new_merge_node = graph_editor_.MergeNodes(draggedNodeId, id);
                         if(new_merge_node){
                             ed::SetNodePosition(new_merge_node->ID, new_merge_node->Position);
@@ -254,7 +243,7 @@ namespace traact::gui {
                 if (!local_node->IsVisible())
                     continue;
 
-                draw_srg_node(local_node->ID, local_node->GetSourceID(), local_node->GetTargetID(), local_node->CoordinateSystem->name.c_str());
+                draw_srg_node(local_node->ID, local_node->GetSourceID(), local_node->GetTargetId(), local_node->CoordinateSystem->name.c_str());
                 local_node->SavePosition();
 
             }
@@ -274,7 +263,7 @@ namespace traact::gui {
                 if (!link->IsVisible())
                     continue;
                 auto link_color = link->IsOutput ? output_color : input_color;
-                ed::Link(link->ID, link->GetSourceID(), link->GetTargetID(), link_color, 2.0f);
+                ed::Link(link->ID, link->GetSourceID(), link->GetTargetId(), link_color, 2.0f);
 
             }
         }
@@ -383,8 +372,8 @@ namespace traact::gui {
 //                auto start_pin = graph_editor_.FindPin(link->StartPinID);
 //                auto end_pin = graph_editor_.FindPin(link->EndPinID);
 //                ImGui::Text("Type: %s", start_pin->TraactPort->getDataType().c_str());
-//                ImGui::Text("From: %s:%s", start_pin->TraactPort->getID().first.c_str(),start_pin->TraactPort->getID().second.c_str());
-//                ImGui::Text("To:   %s:%s", end_pin->TraactPort->getID().first.c_str(),end_pin->TraactPort->getID().second.c_str());
+//                ImGui::Text("From: %s:%s", start_pin->TraactPort->getId().first.c_str(),start_pin->TraactPort->getId().second.c_str());
+//                ImGui::Text("To:   %s:%s", end_pin->TraactPort->getId().first.c_str(),end_pin->TraactPort->getId().second.c_str());
 //            }
 //            else
 //                ImGui::Text("Unknown link: %p", contextLinkId.AsPointer());
@@ -401,7 +390,7 @@ namespace traact::gui {
 //            Node* node = nullptr;
 //
             if (ImGui::MenuItem("Layout Nodes")){
-                this->LayoutSRGNodes();
+                this->layoutSrgNodes();
             }
 
             ImGui::EndPopup();
@@ -424,7 +413,7 @@ namespace traact::gui {
 
                 auto pattern = facade_->instantiatePattern(new_pattern);
                 auto new_editor_pattern = graph_editor_.CreatePatternInstance(pattern);
-                LayoutSRGNode(new_editor_pattern);
+                layoutSrgNode(new_editor_pattern);
 
                 //ed::SetNodePosition(new_node_id, node_pos);
             }
@@ -433,7 +422,7 @@ namespace traact::gui {
 
     }
 
-    void DataflowFile::DrawDfgPanel(int width, int height) {
+    void DataflowFile::drawDfgPanel() {
         ed::SetCurrentEditor(context_dfg_);
         ed::Begin("dfg_editor");
 
@@ -448,12 +437,43 @@ namespace traact::gui {
         const ImVec2 half_pin_vec(pin_size/2,pin_size/2);
         ImVec2 group_size(200,200);
 
+        bool any_item_hovered = ed::GetHoveredNode() || ed::GetHoveredLink() || ed::GetHoveredPin();
+
+
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !any_item_hovered ) {
+            auto mouse_pos = ImGui::GetMousePos();
+
+            auto window_pos = ImGui::GetWindowPos();
+            auto window_size = window_pos + ImGui::GetWindowSize();
+
+            SPDLOG_INFO("clicked {0}:{1}   {2}:{3}   {4}:{5}", mouse_pos.x, mouse_pos.y, window_pos.x, window_pos.y, window_size.x, window_size.y);
+
+            if(mouse_pos.x > window_pos.x && mouse_pos.x < window_size.x && mouse_pos.y > window_pos.y && mouse_pos.y < window_size.y){
+                SPDLOG_INFO("click editor background");
+                selected_traact_element.setSelected(this->shared_from_this());
+            } else {
+                SPDLOG_INFO("click somewhere else");
+            }
+
+
+        }
 
         for (auto& pattern : graph_editor_.Patterns) {
             auto& local_node = pattern->DfgNode;
 
             ed::BeginNode(local_node->ID);
             ImGui::Text("%s", local_node->Pattern->instance_id.c_str());
+
+            if(selected_traact_element.isSelected(local_node->Pattern)){
+                ed::SelectNode(local_node->ID);
+            }
+            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ed::GetHoveredNode() == local_node->ID) {
+                selected_traact_element.setSelected(local_node->Pattern);
+            }
+
+//            if(ed::IsNodeSelected(local_node->ID)){
+//                selected_traact_element.setSelected(local_node->Pattern);
+//            }
 
             ImGui::BeginGroup();
             ImRect inputsRect;
@@ -514,7 +534,7 @@ namespace traact::gui {
 
                     newLinkPin = startPin ? startPin : endPin;
 
-                    if (startPin->TraactPort->port.porttype == pattern::PortType::Consumer)
+                    if (startPin->TraactPort->port.port_type == pattern::PortType::CONSUMER)
                     {
                         std::swap(startPin, endPin);
                         std::swap(startPinId, endPinId);
@@ -535,7 +555,7 @@ namespace traact::gui {
                             ShowLabel("+ Create Link", ImColor(32, 45, 32, 180));
                             if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f))
                             {
-                                SaveState();
+                                saveState();
                                 graph_editor_.ConnectPins(startPinId, endPinId);
 
 
@@ -588,7 +608,7 @@ namespace traact::gui {
                 {
                     if (ed::AcceptDeletedItem())
                     {
-                        SaveState();
+                        saveState();
                         graph_editor_.DisconnectPin(linkId);
                     }
                 }
@@ -674,8 +694,8 @@ namespace traact::gui {
                 auto start_pin = graph_editor_.FindPin(link->StartPinID);
                 auto end_pin = graph_editor_.FindPin(link->EndPinID);
                 ImGui::Text("Type: %s", start_pin->TraactPort->getDataType().c_str());
-                ImGui::Text("From: %s:%s", start_pin->TraactPort->getID().first.c_str(),start_pin->TraactPort->getID().second.c_str());
-                ImGui::Text("To:   %s:%s", end_pin->TraactPort->getID().first.c_str(),end_pin->TraactPort->getID().second.c_str());
+                ImGui::Text("From: %s:%s", start_pin->TraactPort->getId().first.c_str(),start_pin->TraactPort->getId().second.c_str());
+                ImGui::Text("To:   %s:%s", end_pin->TraactPort->getId().first.c_str(),end_pin->TraactPort->getId().second.c_str());
             }
             else
                 ImGui::Text("Unknown link: %p", contextLinkId.AsPointer());
@@ -697,11 +717,11 @@ namespace traact::gui {
 
             ImGui::Separator();
             if (ImGui::MenuItem("Layout Nodes from Sinks"))
-                LayoutDFGNodesFromSinks();
+                layoutDfgNodesFromSinks();
             if (ImGui::MenuItem("Layout Nodes from Sources"))
-                LayoutDFGNodes();
+                layoutDfgNodes();
             if (ImGui::MenuItem("Layout Nodes using NodeSoup"))
-                LayoutDFGNodesNodeSoup();
+                layoutDfgNodesNodeSoup();
 
 
 //            ImGui::Separator();
@@ -722,10 +742,10 @@ namespace traact::gui {
 
         ed::End();
 
-        SetDropTarget();
+        setDropTarget();
     }
 
-    void DataflowFile::SetDropTarget() {
+    void DataflowFile::setDropTarget() {
         if (ImGui::BeginDragDropTarget())
         {
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("NEW_PATTERN_DRAGDROP"))
@@ -742,21 +762,21 @@ namespace traact::gui {
         }
     }
 
-    const char *DataflowFile::GetName() const{
-        return GetNameString().c_str();
+    const char *DataflowFile::getName() const{
+        return getNameString().c_str();
     }
 
-    const std::string &DataflowFile::GetNameString() const{
+    const std::string &DataflowFile::getNameString() const{
         return graph_editor_.Graph->name;
     }
 
-    void DataflowFile::DoSave() {
+    void DataflowFile::doSave() {
         try{
 
             std::ofstream graph_file;
             graph_file.open(filepath.string());
 
-            graph_file << ToDataString();
+            graph_file << toDataString();
             graph_file.close();
 
             dirty = false;
@@ -767,20 +787,20 @@ namespace traact::gui {
 
     }
 
-    std::string DataflowFile::ToDataString() const {
+    std::string DataflowFile::toDataString() const {
         nlohmann::json json_graph;
         ns::to_json(json_graph, graph_editor_);
         return json_graph.dump(4);
     }
 
-    void DataflowFile::BuildNodes() {
+    void DataflowFile::buildNodes() {
 
         graph_editor_.CreateNodes();
         graph_editor_.CreateConnections();
 
     }
 
-    void DataflowFile::LayoutDFGNodes() {
+    void DataflowFile::layoutDfgNodes() {
         //std::vector<ImVec2> node_sizes;
         std::vector<std::vector<editor::DFGNode::Ptr> > node_table;
 
@@ -803,7 +823,7 @@ namespace traact::gui {
                 bool inputs_connected = true;
 
                 for (const auto& input_pin : node->Inputs) {
-                    inputs_connected = inputs_connected && input_pin->TraactPort->IsConnected();
+                    inputs_connected = inputs_connected && input_pin->TraactPort->isConnected();
                 }
 
                 if(!inputs_connected){
@@ -848,7 +868,7 @@ namespace traact::gui {
             for (editor::DFGNode::Ptr& node : current_nodes) {
                 bool only_connected_to_prev = true;
                 for (const auto& input_pin : node->Inputs) {
-                    if(!input_pin->TraactPort->IsConnected())
+                    if(!input_pin->TraactPort->isConnected())
                         continue;
                     auto pattern_port = input_pin->TraactPort->connected_to;
                     auto source_pattern = graph_editor_.Graph->getPattern(pattern_port.first);
@@ -888,7 +908,7 @@ namespace traact::gui {
 
     }
 
-    void DataflowFile::LayoutSRGNodes() {
+    void DataflowFile::layoutSrgNodes() {
         auto screen_size = ed::GetScreenSize();
         auto width = static_cast<unsigned int>(screen_size.x*ed::GetCurrentZoom());
         auto height = static_cast<unsigned int>(screen_size.y*ed::GetCurrentZoom());
@@ -952,7 +972,7 @@ namespace traact::gui {
         }
     }
 
-    void DataflowFile::LayoutDFGNodesNodeSoup() {
+    void DataflowFile::layoutDfgNodesNodeSoup() {
         auto screen_size = ed::GetScreenSize();
         auto width = static_cast<unsigned int>(screen_size.x*ed::GetCurrentZoom());
         auto height = static_cast<unsigned int>(screen_size.y*ed::GetCurrentZoom());
@@ -1016,7 +1036,7 @@ namespace traact::gui {
         }
     }
 
-    void DataflowFile::LayoutDFGNodesFromSinks() {
+    void DataflowFile::layoutDfgNodesFromSinks() {
         std::vector<std::vector<editor::DFGNode::Ptr> > node_table;
 
         auto& nodes = graph_editor_.Patterns;
@@ -1038,7 +1058,7 @@ namespace traact::gui {
                 bool outputs_connected = true;
 
                 for (const auto& input_pin : node->Outputs) {
-                    outputs_connected = outputs_connected || input_pin->TraactPort->IsConnected();
+                    outputs_connected = outputs_connected || input_pin->TraactPort->isConnected();
                 }
 
                 if(!outputs_connected){
@@ -1084,12 +1104,12 @@ namespace traact::gui {
 
                 auto is_connected_to_only_prev = [&is_prev_pattern](const editor::DFGNode::Ptr& current_node){
                     for (const auto& output_pin : current_node->Outputs) {
-                        if(!output_pin->TraactPort->IsConnected())
+                        if(!output_pin->TraactPort->isConnected())
                             continue;
                         auto connected_to_ports = output_pin->TraactPort->connectedToPtr();
 
                         for(auto &connected_port : connected_to_ports){
-                            auto source_pattern = connected_port->pattern_instance;
+                            auto source_pattern = connected_port->port_group_instance->pattern_instance;
                             if(!is_prev_pattern(source_pattern)){
                                 return false;
                             }
@@ -1097,7 +1117,7 @@ namespace traact::gui {
                     }
 
 //                    for (const auto& input_pin : current_node->Inputs) {
-//                        if(!input_pin->TraactPort->IsConnected())
+//                        if(!input_pin->TraactPort->isConnected())
 //                            continue;
 //                        auto connected_to_ports = input_pin->TraactPort->connectedToPtr();
 //
@@ -1145,22 +1165,22 @@ namespace traact::gui {
         }
     }
 
-    bool DataflowFile::CanUndo() const {
+    bool DataflowFile::canUndo() const {
         return !undo_buffer_.empty();
     }
 
-    bool DataflowFile::CanRedo() const {
+    bool DataflowFile::canRedo() const {
         return !redo_buffer_.empty();
     }
 
-    void DataflowFile::SaveState() {
+    void DataflowFile::saveState() {
         nlohmann::json json_graph;
         ns::to_json(json_graph, graph_editor_);
         undo_buffer_.push(json_graph);
         dirty = true;
     }
 
-    void DataflowFile::Undo() {
+    void DataflowFile::undo() {
         nlohmann::json json_graph;
         ns::to_json(json_graph, graph_editor_);
         redo_buffer_.push(json_graph);
@@ -1168,23 +1188,23 @@ namespace traact::gui {
         nlohmann::json state = undo_buffer_.top();
         graph_editor_.Graph = std::make_shared<DefaultInstanceGraph>();
         ns::from_json(state, graph_editor_);
-        BuildNodes();
+        buildNodes();
         undo_buffer_.pop();
 
 
     }
 
-    void DataflowFile::Redo() {
-        SaveState();
+    void DataflowFile::redo() {
+        saveState();
 
         nlohmann::json state = redo_buffer_.top();
         graph_editor_.Graph = std::make_shared<DefaultInstanceGraph>();
         ns::from_json(state, graph_editor_);
-        BuildNodes();
+        buildNodes();
         redo_buffer_.pop();
     }
 
-    void DataflowFile::LayoutSRGNode(editor::EditorPattern::Ptr pattern) {
+    void DataflowFile::layoutSrgNode(editor::EditorPattern::Ptr pattern) {
         auto screen_size = ed::GetScreenSize()/4;
         auto width = static_cast<unsigned int>(screen_size.x*ed::GetCurrentZoom());
         auto height = static_cast<unsigned int>(screen_size.y*ed::GetCurrentZoom());
@@ -1248,7 +1268,12 @@ namespace traact::gui {
 
         }
     }
+void DataflowFile::startDataflow() {
+        facade_ = std::make_shared<traact::DefaultFacade>();
+        facade_->loadDataflow(graph_editor_.Graph);
+        facade_->start();
 
+}
 
 }
 

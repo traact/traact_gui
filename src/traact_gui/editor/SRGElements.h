@@ -59,7 +59,7 @@ namespace traact::gui::editor {
                 const pattern::instance::PatternInstance::Ptr pattern);
 
         ax::NodeEditor::PinId GetSourceID() const;
-        ax::NodeEditor::PinId GetTargetID() const;
+        ax::NodeEditor::PinId GetTargetId() const;
         std::string GetName();
         bool ConnectedTo(std::shared_ptr<SRGEdge> edge);
         void SavePosition();
@@ -85,10 +85,10 @@ namespace traact::gui::editor {
 
 
         ax::NodeEditor::PinId GetSourceID() const;
-        ax::NodeEditor::PinId GetTargetID() const;
+        ax::NodeEditor::PinId GetTargetId() const;
 
 
-        bool IsConnected() const;
+        bool isConnected() const;
 
 
     };

@@ -55,7 +55,7 @@ namespace traact::gui::editor {
         return OutputPinID;
     }
 
-    ax::NodeEditor::PinId SRGNode::GetTargetID() const {
+    ax::NodeEditor::PinId SRGNode::GetTargetId() const {
         if(Parent)
             return Parent->InputPinID;
         return InputPinID;
@@ -73,9 +73,9 @@ namespace traact::gui::editor {
     bool SRGNode::ConnectedTo(std::shared_ptr<SRGEdge> edge) {
 
         for(const auto& connected_port : edge->DfgPin->TraactPort->connectedToPtr()) {
-            const auto connected_id = connected_port->getID();
+            const auto connected_id = connected_port->getId();
             for(const auto& local_edges : Edges) {
-                if(local_edges->DfgPin->TraactPort->getID() == connected_id)
+                if(local_edges->DfgPin->TraactPort->getId() == connected_id)
                     return true;
             }
         }
@@ -110,16 +110,16 @@ namespace traact::gui::editor {
         return SourceNode->GetSourceID();
     }
 
-    ax::NodeEditor::PinId SRGEdge::GetTargetID() const {
-        return TargetNode->GetTargetID();
+    ax::NodeEditor::PinId SRGEdge::GetTargetId() const {
+        return TargetNode->GetTargetId();
     }
 
     bool SRGEdge::IsVisible() const {
         return Parent == nullptr;
     }
 
-    bool SRGEdge::IsConnected() const{
-        return DfgPin->TraactPort->IsConnected();
+    bool SRGEdge::isConnected() const{
+        return DfgPin->TraactPort->isConnected();
     }
 
 

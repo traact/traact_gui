@@ -38,50 +38,54 @@
 #include <traact/pattern/instance/GraphInstance.h>
 #include <traact_gui/DataflowFile.h>
 #include <util/fileutil.h>
-#include <traact/util/RingBuffer.h>
+#include <traact/util/CircularBuffer.h>
+#include "SelectedTraactElement.h"
+#include "editor/DetailsEditor.h"
 
 namespace traact::gui {
 
     class TraactGuiApp {
     public:
-        TraactGuiApp(const std::string &configFile);
+        TraactGuiApp(std::string config_file);
 
         ~TraactGuiApp();
 
-        void OnFrame();
+        void onFrame();
 
-        void NewFile();
-        void NewFile(const std::string& dataflow_json);
-        void OpenFile(fs::path file);
-        const std::vector<std::string> & OpenFiles();
-        void CloseFile(std::string file);
-        void CloseAll();
+        void newFile();
+        void newFile(const std::string& dataflow_json);
+        void openFile(fs::path file);
+        const std::vector<std::string> & openFiles();
+        void closeFile(std::string file);
+        void closeAll();
 
-
-    private:
+        bool onFrameStop();
+     private:
         std::string config_file_;
-        buffers::ring_buffer<std::string, 5> recent_files_;
+        util::CircularBuffer<std::string, 5> recent_files_;
         std::vector<std::string> open_files_;
 
         std::vector<pattern::Pattern::Ptr> available_patterns_;
 
-        std::vector<DataflowFile*> dataflow_files_;
-        DataflowFile* current_dataflow_{nullptr};
-        DataflowFile* pending_dataflow_{nullptr};
+        std::vector<std::shared_ptr<DataflowFile>> dataflow_files_;
+        std::shared_ptr<DataflowFile> current_dataflow_{nullptr};
+        std::shared_ptr<DataflowFile> pending_dataflow_{nullptr};
+        bool show_run_panel_{false};
+        SelectedTraactElement selected_traact_element_;
+        DetailsEditor details_editor_;
 
-        void MenuBar();
+        void menuBar();
 
-        void DrawLeftPanel(int width, int height);
-        void DrawRightPanel(int width, int height);
+        void drawLeftPanel();
+        void drawDataflowPanel();
 
-        void DrawPatternPanel();
-        void DrawDetailsPanel();
+        void drawPatternPanel();
+        void drawDetailsPanel();
 
-        void SaveConfig();
-        void LoadConfig();
+        void saveConfig();
+        void loadConfig();
 
-
-
+        void drawRunPanel();
     };
 }
 

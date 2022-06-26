@@ -55,7 +55,8 @@ set(TRAACT_GUI_SRC
         src/traact_gui/editor/PatternGraphEditor.cpp
         src/traact_gui/editor/PatternGraphEditor.h
         src/traact_gui/editor/JsonEditorSerialization.h
-        src/traact_gui/editor/JsonEditorSerialization.cpp)
+        src/traact_gui/editor/JsonEditorSerialization.cpp src/traact_gui/editor/DetailsEditor.cpp src/traact_gui/editor/DetailsEditor.h
+        src/traact_gui/MainApp.cpp src/traact_gui/MainApp.h src/traact_gui/SelectedTraactElement.cpp src/traact_gui/SelectedTraactElement.h)
 
 set(IMGUI_BINDING_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/imgui_bindings/imgui_impl_glfw.h
         ${CMAKE_CURRENT_BINARY_DIR}/imgui_bindings/imgui_impl_glfw.cpp
@@ -82,7 +83,11 @@ set(IMGUI_EXTERNAL_SOURCES src/external/ImFileDialog/ImFileDialog.h
         src/external/imgui-node-editor/imgui_node_editor_internal.h
         src/external/imgui-node-editor/imgui_node_editor_internal.inl
         src/external/imgui-node-editor/imgui_node_editor.cpp
-        src/external/imgui-node-editor/imgui_node_editor.h)
+        src/external/imgui-node-editor/imgui_node_editor.h
+        src/external/imgui_misc/imgui_stdlib.h
+        src/external/imgui_misc/imgui_stdlib.cpp
+
+        )
 
 #find_package(imgui CONFIG)
 #find_package(glfw3 CONFIG)

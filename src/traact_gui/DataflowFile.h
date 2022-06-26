@@ -29,27 +29,31 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 
-#ifndef TRAACTMULTI_DATAFLOWFILE_H
-#define TRAACTMULTI_DATAFLOWFILE_H
+#ifndef TRAACT_GUI_SRC_TRAACT_GUI_DATAFLOWFILE_H_
+#define TRAACT_GUI_SRC_TRAACT_GUI_DATAFLOWFILE_H_
 
 #include <string>
 #include <util/fileutil.h>
 #include <external/imgui-node-editor/imgui_node_editor.h>
 #include <traact/traact.h>
 #include <traact/facade/Facade.h>
-#include <traact/util/RingBuffer.h>
 #include <traact_gui/editor/PatternGraphEditor.h>
-
+#include "SelectedTraactElement.h"
 namespace traact::gui {
 
-    struct DataflowFile {
-        explicit DataflowFile(std::string name);
-        explicit DataflowFile(fs::path file);
-        explicit DataflowFile(nlohmann::json graph);
+ struct DataflowFile : public std::enable_shared_from_this<DataflowFile> {
+        explicit DataflowFile(std::string name,
+                              SelectedTraactElement &t_selected_traact_element);
+        explicit DataflowFile(fs::path file,
+                              SelectedTraactElement &t_selected_traact_element);
+        explicit DataflowFile(nlohmann::json graph,
+                              SelectedTraactElement &t_selected_traact_element);
         ~DataflowFile();
 
 
         fs::path filepath;
+        SelectedTraactElement& selected_traact_element;
+
         bool        open;       // Set when open (we keep an array of all available documents to simplify demo code!)
         bool        openPrev;   // Copy of Open from last update.
         bool        dirty;      // Set when the document has been modified
@@ -57,22 +61,25 @@ namespace traact::gui {
         bool        wantSave;
         //bool        selected{false};
 
-        void DoOpen()       { open = true; }
-        void DoQueueClose() { wantClose = true; }
-        void DoQueueSave() { wantSave = true; }
-        void DoForceClose() { open = false; dirty = false; }
-        void DoSave();
+        void doOpen()       { open = true; }
+        void doQueueClose() { wantClose = true; }
+        void doQueueSave() { wantSave = true; }
+        void doForceClose() { open = false; dirty = false; }
+        void doSave();
 
-        void Draw(int width, int height);
-        void DrawContextMenu();
-        void DrawSrgPanel(int width, int height);
-        void DrawDfgPanel(int width, int height);
-        void SetDropTarget();
+        void draw();
+        void drawContextMenu();
+        void drawSrgPanel();
+        void drawDfgPanel();
+        void setDropTarget();
 
-        [[nodiscard]] std::string ToDataString() const;
+        [[nodiscard]] std::string toDataString() const;
 
-        [[nodiscard]] const char* GetName() const;
-        [[nodiscard]] const std::string& GetNameString() const;
+        [[nodiscard]] const char* getName() const;
+        [[nodiscard]] const std::string& getNameString() const;
+
+        void startDataflow();
+
         ax::NodeEditor::EditorContext* context_srg_ = nullptr;
         ax::NodeEditor::EditorContext* context_dfg_ = nullptr;
 
@@ -87,28 +94,30 @@ namespace traact::gui {
         editor::DFGPin::Ptr newNodeLinkPin{nullptr};
         editor::DFGPin::Ptr newLinkPin{nullptr};
 
+
+
         //srg
         ax::NodeEditor::NodeId draggedNodeId{ax::NodeEditor::NodeId::Invalid};
         //----
 
-        void BuildNodes();
-        void LayoutDFGNodes();
-        void LayoutDFGNodesFromSinks();
-        void LayoutDFGNodesNodeSoup();
-        void LayoutSRGNodes();
-        void LayoutSRGNode(editor::EditorPattern::Ptr pattern);
+        void buildNodes();
+        void layoutDfgNodes();
+        void layoutDfgNodesFromSinks();
+        void layoutDfgNodesNodeSoup();
+        void layoutSrgNodes();
+        void layoutSrgNode(editor::EditorPattern::Ptr pattern);
 
 
 
         ImVec2 CurrentEditorSize;
         ImVec2 CurrentEditorPos;
 
-        bool CanUndo() const;
-        bool CanRedo() const;
+        bool canUndo() const;
+        bool canRedo() const;
 
-        void SaveState();
-        void Undo();
-        void Redo();
+        void saveState();
+        void undo();
+        void redo();
 
 
     private:
@@ -119,5 +128,5 @@ namespace traact::gui {
     };
 }
 
-#endif //TRAACTMULTI_DATAFLOWFILE_H
+#endif //TRAACT_GUI_SRC_TRAACT_GUI_DATAFLOWFILE_H_
 

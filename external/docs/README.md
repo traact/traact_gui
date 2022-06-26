@@ -45,7 +45,7 @@ Editor is used to implement blueprint editor in Spark CE engine, it proved itsel
 
 Note: Project recently was restructured to mimic ImGui layout.
 
-Please report issues or questions if something isn't clear.
+Please report issues or questions if something isn't dispose.
 
 ## Dependencies
 
@@ -112,7 +112,7 @@ struct Example:
         ed::DestroyEditor(m_Context);
     }
 
-    void OnFrame(float deltaTime) override
+    void onFrame(float deltaTime) override
     {
         auto& io = ImGui::GetIO();
 

@@ -29,8 +29,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **/
 
-#ifndef TRAACTMULTI_DFGELEMENTS_H
-#define TRAACTMULTI_DFGELEMENTS_H
+#ifndef TRAACT_GUI_SRC_TRAACT_GUI_EDITOR_DFGELEMENTS_H_
+#define TRAACT_GUI_SRC_TRAACT_GUI_EDITOR_DFGELEMENTS_H_
 
 #include <spdlog/spdlog.h>
 
@@ -62,9 +62,9 @@ namespace traact::gui::editor {
         ax::NodeEditor::PinId ID;
         DFGNode *ParentNode;
 
-        pattern::instance::PortInstance::Ptr TraactPort;
+        pattern::instance::PortInstance::ConstPtr TraactPort;
 
-        DFGPin(pattern::instance::PortInstance::Ptr port, DFGNode* node);
+        DFGPin(const pattern::instance::PortInstance * port, DFGNode *node);
     };
 
     struct DFGNode {
@@ -79,6 +79,7 @@ namespace traact::gui::editor {
 
         void SavePosition();
         void RestorePosition();
+        const std::string& getName() const;
 
         ImVec2 Size;
         std::size_t max_output_name_length;
@@ -92,4 +93,4 @@ namespace traact::gui::editor {
     };
 }
 
-#endif //TRAACTMULTI_DFGELEMENTS_H
+#endif //TRAACT_GUI_SRC_TRAACT_GUI_EDITOR_DFGELEMENTS_H_

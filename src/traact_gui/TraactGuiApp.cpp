@@ -34,79 +34,69 @@
 #include <traact/facade/DefaultFacade.h>
 #include <traact/serialization/JsonGraphInstance.h>
 #include <fstream>
+#include <utility>
 
 #include "ImGuiUtils.h"
 #include <implot.h>
 #include <external/ImFileDialog/ImFileDialog.h>
 #include <external/imgui-node-editor/imgui_node_editor.h>
 
-traact::gui::TraactGuiApp::TraactGuiApp(const std::string &configFile) : config_file_(configFile) {
+traact::gui::TraactGuiApp::TraactGuiApp(std::string config_file) : config_file_(std::move(config_file)) {
     facade::DefaultFacade facade;
-
 
     available_patterns_ = facade.GetAllAvailablePatterns();
 
-    LoadConfig();
+    loadConfig();
 
 }
 
 traact::gui::TraactGuiApp::~TraactGuiApp() {
     // TODO check for unsaved files?
-    for (auto flow : dataflow_files_) {
-        delete flow;
-    }
+    dataflow_files_.clear();
 }
 
-void traact::gui::TraactGuiApp::OpenFile(fs::path file) {
-    if(!exists(file)){
+void traact::gui::TraactGuiApp::openFile(fs::path file) {
+    if (!exists(file)) {
         spdlog::error("file {0} does not exist", file.string());
         return;
     }
 
-    auto find_result = std::find_if(recent_files_.begin(), recent_files_.end(),  [&file](const std::string& x) { return x == file.string();});
-    if(find_result == recent_files_.end()){
+    auto *find_result = std::find_if(recent_files_.begin(),
+                                     recent_files_.end(),
+                                     [&file](const std::string &x) { return x == file.string(); });
+    if (find_result == recent_files_.end()) {
         recent_files_.push_back(file.string());
-        SaveConfig();
+        saveConfig();
     }
 
-
-
-
-    try{
-        DataflowFile* new_dataflow = new DataflowFile(file);
-        dataflow_files_.push_back(new_dataflow);
+    try {
+        dataflow_files_.push_back(std::make_shared<DataflowFile>(file, selected_traact_element_));
     } catch (...) {
         spdlog::error("error loading file {0}", file.string());
     }
 
-
-
 }
 
-const std::vector<std::string> & traact::gui::TraactGuiApp::OpenFiles() {
+const std::vector<std::string> &traact::gui::TraactGuiApp::openFiles() {
     return open_files_;
 }
 
-void traact::gui::TraactGuiApp::CloseFile(std::string file) {
-
-
-}
-
-void traact::gui::TraactGuiApp::CloseAll() {
+void traact::gui::TraactGuiApp::closeFile(std::string file) {
 
 }
 
+void traact::gui::TraactGuiApp::closeAll() {
 
+}
 
-
-void traact::gui::TraactGuiApp::NewFile() {
+void traact::gui::TraactGuiApp::newFile() {
     for (int i = 0; i < 256; ++i) {
         std::string new_name = fmt::format("untitled {0}", i);
         auto result = std::find_if(
-                dataflow_files_.begin(), dataflow_files_.end(),
-                [&new_name](const DataflowFile* x) { return x->GetNameString() == new_name;});
-        if(result == dataflow_files_.end()){
-            dataflow_files_.push_back(new DataflowFile(new_name));
+            dataflow_files_.begin(), dataflow_files_.end(),
+            [&new_name](const auto &x) { return x->getNameString() == new_name; });
+        if (result == dataflow_files_.end()) {
+            dataflow_files_.push_back(std::make_shared<DataflowFile>(new_name, selected_traact_element_));
             return;
         }
     }
@@ -114,74 +104,61 @@ void traact::gui::TraactGuiApp::NewFile() {
     spdlog::error("too many untitled dataflow networks open. unable to create new dataflow");
 }
 
-void traact::gui::TraactGuiApp::OnFrame() {
+void traact::gui::TraactGuiApp::onFrame() {
 
-    MenuBar();
+    menuBar();
 
-    if(current_dataflow_ == nullptr && !dataflow_files_.empty()){
-        pending_dataflow_ = dataflow_files_[0];
+    if (current_dataflow_ == nullptr && !dataflow_files_.empty()) {
+        pending_dataflow_ = dataflow_files_.front();
     }
 
-    static float leftPaneWidth  = 400.0f;
-    static float rightPaneWidth = 800.0f;
-    Splitter("##Splitter",true, 4.0f, &leftPaneWidth, &rightPaneWidth, 50.0f, 50.0f);
-
-
-    DrawLeftPanel(leftPaneWidth, -1);
-
-    ImGui::SameLine(0.0f, 12.0f);
-
-    DrawRightPanel(rightPaneWidth, -1);
-
-
-
-
-
-
+    drawLeftPanel();
+    drawDataflowPanel();
+    if(show_run_panel_){
+        drawRunPanel();
+    }
 
 }
 
-void traact::gui::TraactGuiApp::MenuBar() {
-    auto& io = ImGui::GetIO();
+void traact::gui::TraactGuiApp::menuBar() {
+    auto &gui_io = ImGui::GetIO();
 
     static bool show_imgui_demo = false;
-    if (ImGui::BeginMainMenuBar())
-    {
-        if (ImGui::BeginMenu("File"))
-        {
+    if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("New")) {
-                NewFile();
+                newFile();
             }
-            if (ImGui::MenuItem("Open", "Ctrl+O"))
-            {
-                ifd::FileDialog::Instance().Open("DataflowOpenDialog", "Open a dataflow", "Json file (*.json){.json},.*", false);
+            if (ImGui::MenuItem("Open", "Ctrl+O")) {
+                ifd::FileDialog::Instance().Open("DataflowOpenDialog",
+                                                 "Open a dataflow",
+                                                 "Json file (*.json){.json},.*",
+                                                 false);
             }
-            if (ImGui::BeginMenu("Open Recent"))
-            {
-                for(const auto& file_name : recent_files_){
-                    if(ImGui::MenuItem(file_name.c_str())){
-                        OpenFile(file_name);
+            if (ImGui::BeginMenu("Open Recent")) {
+                for (const auto &file_name : recent_files_) {
+                    if (ImGui::MenuItem(file_name.c_str())) {
+                        openFile(file_name);
                     }
                 }
                 ImGui::EndMenu();
             }
             if (ImGui::MenuItem("Save", "Ctrl+S", false, current_dataflow_ != nullptr)) {
-                if(current_dataflow_->dirty)
-                    current_dataflow_->DoQueueSave();
+                if (current_dataflow_->dirty)
+                    current_dataflow_->doQueueSave();
             }
             if (ImGui::MenuItem("Save all")) {
-                for (auto& dataflow : dataflow_files_)
-                    if(dataflow && dataflow->dirty)
-                        dataflow->DoQueueSave();
+                for (auto &dataflow : dataflow_files_)
+                    if (dataflow && dataflow->dirty)
+                        dataflow->doQueueSave();
             }
-            if (ImGui::MenuItem("Save As..", nullptr , false, current_dataflow_ != nullptr)) {
-                NewFile(current_dataflow_->ToDataString());
+            if (ImGui::MenuItem("Save As..", nullptr, false, current_dataflow_ != nullptr)) {
+                newFile(current_dataflow_->toDataString());
             }
-            if (ImGui::MenuItem("Close All", nullptr, false, !dataflow_files_.empty())){
-                for (auto& dataflow : dataflow_files_)
-                    dataflow->DoQueueClose();
+            if (ImGui::MenuItem("Close All", nullptr, false, !dataflow_files_.empty())) {
+                for (auto &dataflow : dataflow_files_)
+                    dataflow->doQueueClose();
             }
-
 
             ImGui::Separator();
 
@@ -189,22 +166,20 @@ void traact::gui::TraactGuiApp::MenuBar() {
 
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("Edit"))
-        {
-            if (ImGui::MenuItem("Undo", "CTRL+Z", false, current_dataflow_->CanUndo()))
-                current_dataflow_->Undo();
-
-            if (ImGui::MenuItem("Redo", "CTRL+Y", false, current_dataflow_->CanRedo()))
-                current_dataflow_->Redo();
-
-//            ImGui::Separator();
-//            if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-//            if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-//            if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+        if (ImGui::BeginMenu("Edit")) {
+            if (ImGui::MenuItem("undo", "CTRL+Z", false, current_dataflow_->canUndo())) {
+                current_dataflow_->undo();
+            }
+            if (ImGui::MenuItem("redo", "CTRL+Y", false, current_dataflow_->canRedo())) {
+                current_dataflow_->redo();
+            }
             ImGui::EndMenu();
         }
-        if(ImGui::BeginMenu("Help")) {
-            if(ImGui::MenuItem("ImGui Demo Window")){
+        if (ImGui::Button("Run")) {
+            show_run_panel_ = !show_run_panel_;
+        }
+        if (ImGui::BeginMenu("Help")) {
+            if (ImGui::MenuItem("ImGui Demo Window")) {
                 show_imgui_demo = !show_imgui_demo;
             }
             ImGui::EndMenu();
@@ -214,107 +189,112 @@ void traact::gui::TraactGuiApp::MenuBar() {
 
     if (ifd::FileDialog::Instance().IsDone("DataflowOpenDialog")) {
         if (ifd::FileDialog::Instance().HasResult()) {
-            const fs::path& res = ifd::FileDialog::Instance().GetResult();
+            const fs::path &res = ifd::FileDialog::Instance().GetResult();
             spdlog::info("open file: {0}", res.string());
-            OpenFile(res.string());
+            openFile(res.string());
 
         }
         ifd::FileDialog::Instance().Close();
     }
 
-    if(show_imgui_demo){
+    if (show_imgui_demo) {
         ImGui::ShowDemoWindow();
     }
 }
 
-void traact::gui::TraactGuiApp::DrawLeftPanel(int width, int height) {
-    static float patternHeight  = 600;
-    static float detailHeight = 50.0f;
+void traact::gui::TraactGuiApp::drawLeftPanel() {
+    static float pattern_height = 600.0f;
+    static float detail_height = 400.0f;
 
-    Splitter("##SplitterLeft",false, 4.0f, &patternHeight, &detailHeight, 50.0f, 50.0f,width);
-    ImGui::BeginChild("##leftMainPanel", ImVec2(width, patternHeight+detailHeight));
+    ImGui::Begin("Details");
+    auto window_width = ImGui::GetWindowWidth();
+    auto window_height = ImGui::GetWindowHeight();
+    auto total_height = pattern_height + detail_height;
+    if (total_height < window_height) {
+        detail_height = window_height - total_height;
+    }
+    Splitter("##SplitterLeft", false, 4.0f, &pattern_height, &detail_height, 50.0f, 400.0f, window_width);
 
     //ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_HorizontalScrollbar
-    ImGui::BeginChild("##mainPatternPanel", ImVec2(width, patternHeight+4));
-    DrawPatternPanel();
+    ImGui::BeginChild("##mainPatternPanel", ImVec2(window_width, pattern_height + 4));
+    drawPatternPanel();
     ImGui::EndChild();
 
-    ImGui::BeginChild("##mainDetailsPanel");
-    DrawDetailsPanel();
+    ImGui::BeginChild("##mainDetailsPanel", ImVec2(window_width, -FLT_MIN));
+    drawDetailsPanel();
     ImGui::EndChild();
 
-
-    ImGui::EndChild();
+    ImGui::End();
 }
 
-void traact::gui::TraactGuiApp::DrawRightPanel(int width, int height) {
+void traact::gui::TraactGuiApp::drawDataflowPanel() {
 
     // Options
-    static ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_FittingPolicyDefault_ |  ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_AutoSelectNewTabs;
+    static ImGuiTabBarFlags tab_bar_flags =
+        ImGuiTabBarFlags_FittingPolicyDefault_ | ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_AutoSelectNewTabs;
 
-    ImGui::BeginChild("##rightMainPanel");
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(250, 250));
+    ImGui::Begin("Dataflow files", 0);
     // Submit Tab Bar and Tabs
     {
-        if (ImGui::BeginTabBar("##dataflow_tabs", tab_bar_flags))
-        {
-            for (const auto& dataflow : dataflow_files_) {
-                if (!dataflow->open && dataflow->openPrev)
-                    ImGui::SetTabItemClosed(dataflow->GetName());
+        //ImGui::BeginChild("##dataflow_file");
+        if (ImGui::BeginTabBar("##dataflow_tabs", tab_bar_flags)) {
+            for (const auto &dataflow : dataflow_files_) {
+                if (!dataflow->open && dataflow->openPrev) {
+                    ImGui::SetTabItemClosed(dataflow->getName());
+                }
                 dataflow->openPrev = dataflow->open;
             }
 
             // Submit Tabs
-            for (const auto& dataflow : dataflow_files_) {
+            for (const auto &dataflow : dataflow_files_) {
 
-                if (!dataflow->open)
+                if (!dataflow->open) {
                     continue;
+                }
 
                 ImGuiTabItemFlags tab_flags = (dataflow->dirty ? ImGuiTabItemFlags_UnsavedDocument : 0);
-                if(pending_dataflow_ != nullptr){
+                if (pending_dataflow_ != nullptr) {
                     tab_flags = tab_flags | (pending_dataflow_ == dataflow ? ImGuiTabItemFlags_SetSelected : 0);
+                    selected_traact_element_.setSelected(pending_dataflow_);
+                    current_dataflow_ = pending_dataflow_;
                 }
 
-
-
-
-                bool visible = ImGui::BeginTabItem(dataflow->GetName(), &dataflow->open, tab_flags);
+                bool visible = ImGui::BeginTabItem(dataflow->getName(), &dataflow->open, tab_flags);
 
                 // Cancel attempt to close when unsaved add to save queue so we can display a popup.
-                if (!dataflow->open && dataflow->dirty)
-                {
+                if (!dataflow->open && dataflow->dirty) {
                     dataflow->open = true;
-                    dataflow->DoQueueClose();
+                    dataflow->doQueueClose();
                 }
 
-                dataflow->DrawContextMenu();
-                if (visible)
-                {
-                    current_dataflow_ = dataflow;
-                    dataflow->Draw(height, 0);
+
+                if (visible) {
+                    dataflow->drawContextMenu();
+                    dataflow->draw();
                     ImGui::EndTabItem();
                 }
             }
 
             ImGui::EndTabBar();
         }
+        //ImGui::EndChild();
     }
 
-    ImGui::EndChild();
+    ImGui::End();
+    ImGui::PopStyleVar(1);
 
     pending_dataflow_ = nullptr;
 
     // Update closing queue
     //static ImVector<DataflowFile*> close_queue;
-    static std::vector<DataflowFile*> close_queue;
-    static std::stack<DataflowFile*> save_queue;
-    if (close_queue.empty())
-    {
+    static std::vector<std::shared_ptr<DataflowFile>> close_queue;
+    static std::stack<std::shared_ptr<DataflowFile>> save_queue;
+    if (close_queue.empty()) {
         // Close queue is locked once we started a popup
-        for (int doc_n = 0; doc_n < dataflow_files_.size(); doc_n++)
-        {
-            DataflowFile* dataflow = dataflow_files_[doc_n];
-            if (dataflow->wantClose)
-            {
+        for (int doc_n = 0; doc_n < dataflow_files_.size(); doc_n++) {
+            auto &dataflow = dataflow_files_[doc_n];
+            if (dataflow->wantClose) {
                 dataflow->wantClose = false;
                 close_queue.push_back(dataflow);
             }
@@ -322,59 +302,51 @@ void traact::gui::TraactGuiApp::DrawRightPanel(int width, int height) {
     }
 
     // Display closing confirmation UI
-    if (!close_queue.empty())
-    {
+    if (!close_queue.empty()) {
         int close_queue_unsaved_documents = 0;
         for (int n = 0; n < close_queue.size(); n++)
             if (close_queue[n]->dirty)
                 close_queue_unsaved_documents++;
 
-        if (close_queue_unsaved_documents == 0)
-        {
+        if (close_queue_unsaved_documents == 0) {
             // Close documents when all are clean
             for (int n = 0; n < close_queue.size(); n++)
-                close_queue[n]->DoForceClose();
+                close_queue[n]->doForceClose();
             close_queue.clear();
         } else {
 
             if (!ImGui::IsPopupOpen("Save?"))
                 ImGui::OpenPopup("Save?");
-            if (ImGui::BeginPopupModal("Save?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-            {
+            if (ImGui::BeginPopupModal("Save?", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
                 ImGui::Text("Save change to the following items?");
                 float item_height = ImGui::GetTextLineHeightWithSpacing();
-                if (ImGui::BeginChildFrame(ImGui::GetID("frame"), ImVec2(-FLT_MIN, 6.25f * item_height)))
-                {
+                if (ImGui::BeginChildFrame(ImGui::GetID("frame"), ImVec2(-FLT_MIN, 6.25f * item_height))) {
                     for (int n = 0; n < close_queue.size(); n++)
                         if (close_queue[n]->dirty)
-                            ImGui::Text("%s", close_queue[n]->GetName());
+                            ImGui::Text("%s", close_queue[n]->getName());
                     ImGui::EndChildFrame();
                 }
 
                 ImVec2 button_size(ImGui::GetFontSize() * 7.0f, 0.0f);
-                if (ImGui::Button("Yes", button_size))
-                {
-                    for (int n = 0; n < close_queue.size(); n++)
-                    {
-                        if (close_queue[n]->dirty){
-                            close_queue[n]->DoQueueSave();
+                if (ImGui::Button("Yes", button_size)) {
+                    for (int n = 0; n < close_queue.size(); n++) {
+                        if (close_queue[n]->dirty) {
+                            close_queue[n]->doQueueSave();
                         }
-                        close_queue[n]->DoForceClose();
+                        close_queue[n]->doForceClose();
                     }
                     close_queue.clear();
                     ImGui::CloseCurrentPopup();
                 }
                 ImGui::SameLine();
-                if (ImGui::Button("No", button_size))
-                {
+                if (ImGui::Button("No", button_size)) {
                     for (int n = 0; n < close_queue.size(); n++)
-                        close_queue[n]->DoForceClose();
+                        close_queue[n]->doForceClose();
                     close_queue.clear();
                     ImGui::CloseCurrentPopup();
                 }
                 ImGui::SameLine();
-                if (ImGui::Button("Cancel", button_size))
-                {
+                if (ImGui::Button("Cancel", button_size)) {
                     close_queue.clear();
                     ImGui::CloseCurrentPopup();
                 }
@@ -382,40 +354,37 @@ void traact::gui::TraactGuiApp::DrawRightPanel(int width, int height) {
             }
         }
 
-
     }
 
-    if(save_queue.empty()) {
+    if (save_queue.empty()) {
         // Save queue is locked once we started a popup
-        for (int doc_n = 0; doc_n < dataflow_files_.size(); doc_n++)
-        {
-            DataflowFile* dataflow = dataflow_files_[doc_n];
-            if (dataflow->wantSave)
-            {
+        for (int doc_n = 0; doc_n < dataflow_files_.size(); doc_n++) {
+            auto &dataflow = dataflow_files_[doc_n];
+            if (dataflow->wantSave) {
                 dataflow->wantSave = false;
                 save_queue.push(dataflow);
             }
         }
-    }
-    else {
+    } else {
         static bool show_save_dialog = false;
 
-        auto& current = save_queue.top();
-        if(!show_save_dialog){
-            if(!current->filepath.has_filename()){
-                ifd::FileDialog::Instance().Save("##DataflowSaveDialog", fmt::format("Save {0}", current->GetNameString()), "*.json {.json}");
+        auto &current = save_queue.top();
+        if (!show_save_dialog) {
+            if (!current->filepath.has_filename()) {
+                ifd::FileDialog::Instance().Save("##DataflowSaveDialog",
+                                                 fmt::format("Save {0}", current->getNameString()),
+                                                 "*.json {.json}");
                 show_save_dialog = true;
             }
 
         }
 
-
         if (ifd::FileDialog::Instance().IsDone("##DataflowSaveDialog")) {
 
             if (ifd::FileDialog::Instance().HasResult()) {
                 current->filepath = ifd::FileDialog::Instance().GetResult();
-                spdlog::info("SAVE {1} {0}", current->filepath.string(), current->GetNameString());
-                current->DoSave();
+                spdlog::info("SAVE {1} {0}", current->filepath.string(), current->getNameString());
+                current->doSave();
             }
             save_queue.pop();
             show_save_dialog = false;
@@ -423,58 +392,67 @@ void traact::gui::TraactGuiApp::DrawRightPanel(int width, int height) {
         }
     }
 
-
-
-
-
-
 }
 
-void traact::gui::TraactGuiApp::DrawPatternPanel() {
-    static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow  | ImGuiTreeNodeFlags_SpanAvailWidth ;
+void traact::gui::TraactGuiApp::drawPatternPanel() {
+    static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
-    if(ImGui::TreeNode("Loaded Dataflow")){
 
-        for(const auto& dataflow : dataflow_files_){
-            if(!dataflow->open)
+    if (ImGui::TreeNode("Loaded Dataflow")) {
+
+        for (const auto &dataflow : dataflow_files_) {
+            if (!dataflow->open)
                 continue;
 
-
             ImGuiTreeNodeFlags node_flags = base_flags;
-            if (dataflow == current_dataflow_)
+            if (dataflow == current_dataflow_) {
                 node_flags |= ImGuiTreeNodeFlags_Selected;
+            }
 
-            bool node_open = ImGui::TreeNodeEx(dataflow, node_flags, "%s", dataflow->GetName());
+            bool node_open = ImGui::TreeNodeEx(dataflow.get(), node_flags, "%s", dataflow->getName());
             if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && ImGui::IsItemHovered()) {
-                if(current_dataflow_ != dataflow)
+                if (current_dataflow_ != dataflow)
                     pending_dataflow_ = dataflow;
             }
 
-            if (node_open)
-            {
+            if (node_open) {
 
+                auto all_patterns = dataflow->graph_editor_.Graph->getAll();
+                if (ImGui::BeginListBox("##pattern_instances",
+                                        ImVec2(-FLT_MIN,
+                                               all_patterns.size() * ImGui::GetTextLineHeightWithSpacing() + 2))) {
+                    for (const auto &tmp : all_patterns) {
+                        const bool is_selected = selected_traact_element_.isSelected(tmp);
 
-                for(const auto& tmp : dataflow->graph_editor_.Graph->getAll()){
-                    ImGui::Text(tmp->getPatternName().c_str());
+                        if (ImGui::Selectable(tmp->instance_id.c_str(), is_selected)) {
+                            selected_traact_element_.setSelected(tmp);
+                        }
+                        if (is_selected) {
+                            ImGui::SetItemDefaultFocus();
+                        }
+                    }
+                    ImGui::EndListBox();
                 }
+
                 ImGui::TreePop();
             }
         }
 
         ImGui::TreePop();
     }
-    ImGui::SetNextTreeNodeOpen(true);
-    if(ImGui::TreeNode("All Patterns")){
+    //ImGui::SetNextTreeNodeOpen(true);
+
+
+    if (ImGui::TreeNode("All Patterns")) {
         int i = 0;
-        for (const auto& tmp : available_patterns_) {
+        for (const auto &tmp : available_patterns_) {
 
             //ImGui::PushID(i);
 
             ImGui::Button(tmp->name.c_str());
-            if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)){
+            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
 
-                ImGui::SetDragDropPayload("NEW_PATTERN_DRAGDROP", tmp->name.c_str(), tmp->name.length()+1);
-
+                ImGui::SetDragDropPayload("NEW_PATTERN_DRAGDROP", tmp->name.c_str(), tmp->name.length() + 1);
 
                 ImGui::EndDragDropSource();
             }
@@ -485,41 +463,24 @@ void traact::gui::TraactGuiApp::DrawPatternPanel() {
 
         }
 
-
         ImGui::TreePop();
     }
 
+}
+
+void traact::gui::TraactGuiApp::drawDetailsPanel() {
+
+    std::visit(details_editor_, selected_traact_element_.selected);
 
 }
 
-void traact::gui::TraactGuiApp::DrawDetailsPanel() {
-    ImGui::Text("Filename ");
-    if(current_dataflow_){
-        //ImGui::SameLine(4);
-        ImGui::Text("%s",current_dataflow_->filepath.c_str());
-    }
-
-    ImGui::Text("Graph name");
-    if(current_dataflow_){
-        //ImGui::SameLine(4);
-        //ImGui::InputText()
-        static char password[64] = "password123";
-        if(ImGui::InputText("password", password, IM_ARRAYSIZE(password), ImGuiInputTextFlags_EnterReturnsTrue)) {
-          current_dataflow_->graph_editor_.Graph->name = password;
-        };
-        ImGui::Text("%s",current_dataflow_->GetName());
-    }
-}
-
-void traact::gui::TraactGuiApp::SaveConfig() {
-    try{
+void traact::gui::TraactGuiApp::saveConfig() {
+    try {
         nlohmann::json json_graph;
 
-        for (const auto& file : recent_files_) {
+        for (const auto &file : recent_files_) {
             json_graph["RecentFiles"].push_back(file);
         }
-
-
 
         std::ofstream config_file;
         config_file.open(config_file_);
@@ -531,22 +492,25 @@ void traact::gui::TraactGuiApp::SaveConfig() {
 
 }
 
-void traact::gui::TraactGuiApp::LoadConfig() {
-    try{
-        nlohmann::json json_graph;
-        std::ifstream config_file;
-        config_file.open(config_file_);
-        config_file >> json_graph;
-        config_file.close();
+void traact::gui::TraactGuiApp::loadConfig() {
+    try {
+        if (util::fileExists(config_file_)) {
+            nlohmann::json json_graph;
+            std::ifstream config_file;
+            config_file.open(config_file_);
+            config_file >> json_graph;
+            config_file.close();
 
-        auto recent_result = json_graph.find("RecentFiles");
+            auto recent_result = json_graph.find("RecentFiles");
 
-        if(recent_result != json_graph.end()){
-            for (auto& recent_file : *recent_result) {
-                recent_files_.push_back(recent_file.get<std::string>());
+            if (recent_result != json_graph.end()) {
+                for (auto &recent_file : *recent_result) {
+                    recent_files_.push_back(recent_file.get<std::string>());
+                }
             }
+        } else {
+            SPDLOG_INFO("no config file");
         }
-
 
     } catch (...) {
         spdlog::error("error loading config file");
@@ -554,13 +518,27 @@ void traact::gui::TraactGuiApp::LoadConfig() {
 
 }
 
-void traact::gui::TraactGuiApp::NewFile(const std::string &dataflow_json) {
+void traact::gui::TraactGuiApp::newFile(const std::string &dataflow_json) {
     nlohmann::json json_graph;
     std::stringstream ss(dataflow_json);
     ss >> json_graph;
-    auto new_dataflow = new DataflowFile(json_graph);
-    new_dataflow->DoQueueSave();
+    auto new_dataflow = std::make_shared<DataflowFile>(json_graph, selected_traact_element_);
+    new_dataflow->doQueueSave();
     dataflow_files_.push_back(new_dataflow);
+
+}
+bool traact::gui::TraactGuiApp::onFrameStop() {
+    // return true until it is ok to close all windows and stop the app
+    return false;
+}
+void traact::gui::TraactGuiApp::drawRunPanel() {
+    ImGui::Begin("Run dataflow");
+    if(ImGui::Button("Start")){
+        if(current_dataflow_) {
+            current_dataflow_->startDataflow();
+        }
+    }
+    ImGui::End();
 
 }
 

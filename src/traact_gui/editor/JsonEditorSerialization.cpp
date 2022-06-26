@@ -77,6 +77,9 @@ void ns::to_json(json &jobj, const traact::gui::editor::PatternGraphEditor &obj)
 }
 
 void ns::from_json(const json &jobj, traact::gui::editor::PatternGraphEditor &obj) {
+    if(!obj.Graph){
+        obj.Graph = std::make_shared<traact::pattern::instance::GraphInstance>();
+    }
     from_json(jobj, *obj.Graph);
 
     obj.CreateNodes();

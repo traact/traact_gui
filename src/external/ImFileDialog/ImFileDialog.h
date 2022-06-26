@@ -5,9 +5,6 @@
 #include <thread>
 #include <vector>
 #include <functional>
-//#include <experimental/filesystem>
-//namespace fs = std::experimental::filesystem;
-//#include <filesystem>
 #include <util/fileutil.h>
 #include <unordered_map>
 #include <algorithm> // std::min, std::max
@@ -55,6 +52,13 @@ namespace ifd {
 
 		class FileTreeNode {
 		public:
+#ifdef _WIN32
+			FileTreeNode(const std::wstring& path) {
+				Path = fs::path(path);
+				Read = false;
+			}
+#endif
+
 			FileTreeNode(const std::string& path) {
 				Path = fs::u8path(path);
 				Read = false;
@@ -104,7 +108,7 @@ namespace ifd {
 
 		std::string m_filter;
 		std::vector<std::vector<std::string>> m_filterExtensions;
-		int m_filterSelection;
+		size_t m_filterSelection;
 		void m_parseFilter(const std::string& filter);
 
 		std::vector<int> m_iconIndices;
@@ -134,7 +138,4 @@ namespace ifd {
 		void m_renderPopups();
 		void m_renderFileDialog();
 	};
-
-	static const char* GetDefaultFolderIcon();
-	static const char* GetDefaultFileIcon();
 }
