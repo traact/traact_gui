@@ -37,8 +37,8 @@ class Traact(ConanFile):
         self.requires("traact_component_kinect_azure/1.0.0@traact/latest")
         self.requires("traact_component_cereal/1.0.0@traact/latest")
         self.requires("traact_component_aruco/1.0.0@traact/latest")
-        self.requires("traact_component_shm/1.0.0@traact/latest")
-
+        self.requires("traact_component_pcpd_shm/1.0.0@traact/latest")
+        self.requires("opencv/4.5.5@camposs/stable")
         self.requires("glfw/3.3.4")
         self.requires("glew/2.2.0")
         #self.requires("imgui/1.83")

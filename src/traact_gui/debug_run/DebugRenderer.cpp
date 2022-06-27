@@ -30,7 +30,7 @@ void DebugRenderer::draw() {
         }
 
         if (additional_commands_processed) {
-            SPDLOG_TRACE("render command ts: additional_commands_processed_");
+            SPDLOG_DEBUG("render command ts: additional_commands_processed_");
             additional_commands_processed_.SetInit(true);
         }
     }
