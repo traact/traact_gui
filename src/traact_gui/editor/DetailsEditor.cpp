@@ -13,8 +13,10 @@ void gui::DetailsEditor::operator()(std::shared_ptr<DataflowFile> &dataflow_file
     for (auto& time_domain : graph_instance->timedomain_configs) {
         ImGui::Text("Time Domain %lu",time_domain.first);
         auto& time_domain_config = time_domain.second;
-        ImGui::DragFloat("Sensor frequency",&time_domain_config.sensor_frequency, 0.01f, 0.0f);
-        ImGui::DragInt("Worker Count",&time_domain_config.cpu_count, 0.1f, -std::thread::hardware_concurrency(), 10000);
+        double min_freq = 0;
+        double max_freq = 100;
+        ImGui::SliderScalar("Sensor frequency",ImGuiDataType_Double,&time_domain_config.sensor_frequency, &min_freq, &max_freq);
+        ImGui::DragInt("Worker Count",&time_domain_config.cpu_count, 0.1f, -std::thread::hardware_concurrency(), 100);
     }
 
 

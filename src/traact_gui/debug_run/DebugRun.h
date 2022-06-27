@@ -1,0 +1,32 @@
+/** Copyright (C) 2022  Frieder Pankratz <frieder.pankratz@gmail.com> **/
+
+#ifndef TRAACT_GUI_SRC_TRAACT_GUI_DEBUG_RUN_DEBUGRUN_H_
+#define TRAACT_GUI_SRC_TRAACT_GUI_DEBUG_RUN_DEBUGRUN_H_
+
+#include <memory>
+#include "traact_gui/DataflowFile.h"
+#include "DebugRenderer.h"
+
+namespace traact::gui {
+
+class DebugRun {
+ public:
+    void draw();
+
+    void setCurrentDataflow(std::shared_ptr<traact::gui::DataflowFile> dataflow);
+ private:
+    std::shared_ptr<traact::gui::DataflowFile> current_dataflow_;
+    std::shared_ptr<traact::DefaultFacade> facade_;
+    std::optional<std::shared_future<void>> facade_finished_;
+    bool attach_debug_renderer_{true};
+    std::string debug_sink_id_{"debug_sink"};
+    DebugRenderer debug_renderer_;
+    bool canStart();
+    bool canStop();
+    void startDataflow();
+    void connectDebugRenderer();
+};
+
+} // traact
+
+#endif //TRAACT_GUI_SRC_TRAACT_GUI_DEBUG_RUN_DEBUGRUN_H_

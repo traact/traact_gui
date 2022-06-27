@@ -1,7 +1,6 @@
 /** Copyright (C) 2022  Frieder Pankratz <frieder.pankratz@gmail.com> **/
 
-#include "SRG_DFG_Window.h"
+#include "KeyPointListComponent.h"
 
-void traact::gui::SRG_DFG_Window::Draw() {
-
-}
+namespace traact {
+} // traact

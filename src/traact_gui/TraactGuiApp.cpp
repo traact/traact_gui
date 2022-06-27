@@ -1,33 +1,4 @@
-/*  BSD 3-Clause License
- *
- *  Copyright (c) 2020, FriederPankratz <frieder.pankratz@gmail.com>
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
- *
- *  1. Redistributions of source code must retain the above copyright notice, this
- *     list of conditions and the following disclaimer.
- *
- *  2. Redistributions in binary form must reproduce the above copyright notice,
- *     this list of conditions and the following disclaimer in the documentation
- *     and/or other materials provided with the distribution.
- *
- *  3. Neither the name of the copyright holder nor the names of its
- *     contributors may be used to endorse or promote products derived from
- *     this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- *  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-**/
+/** Copyright (C) 2022  Frieder Pankratz <frieder.pankratz@gmail.com> **/
 
 #include "TraactGuiApp.h"
 
@@ -112,10 +83,11 @@ void traact::gui::TraactGuiApp::onFrame() {
         pending_dataflow_ = dataflow_files_.front();
     }
 
-    drawLeftPanel();
+    drawDataflowFilesPanel();
+    drawDetailsPanel();
     drawDataflowPanel();
     if(show_run_panel_){
-        drawRunPanel();
+        debug_run_.draw();
     }
 
 }
@@ -217,7 +189,7 @@ void traact::gui::TraactGuiApp::drawLeftPanel() {
 
     //ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_HorizontalScrollbar
     ImGui::BeginChild("##mainPatternPanel", ImVec2(window_width, pattern_height + 4));
-    drawPatternPanel();
+    drawDataflowFilesPanel();
     ImGui::EndChild();
 
     ImGui::BeginChild("##mainDetailsPanel", ImVec2(window_width, -FLT_MIN));
@@ -234,7 +206,7 @@ void traact::gui::TraactGuiApp::drawDataflowPanel() {
         ImGuiTabBarFlags_FittingPolicyDefault_ | ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_AutoSelectNewTabs;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(250, 250));
-    ImGui::Begin("Dataflow files", 0);
+    ImGui::Begin("Dataflow graph", 0);
     // Submit Tab Bar and Tabs
     {
         //ImGui::BeginChild("##dataflow_file");
@@ -258,6 +230,7 @@ void traact::gui::TraactGuiApp::drawDataflowPanel() {
                     tab_flags = tab_flags | (pending_dataflow_ == dataflow ? ImGuiTabItemFlags_SetSelected : 0);
                     selected_traact_element_.setSelected(pending_dataflow_);
                     current_dataflow_ = pending_dataflow_;
+                    debug_run_.setCurrentDataflow(current_dataflow_);
                 }
 
                 bool visible = ImGui::BeginTabItem(dataflow->getName(), &dataflow->open, tab_flags);
@@ -394,10 +367,12 @@ void traact::gui::TraactGuiApp::drawDataflowPanel() {
 
 }
 
-void traact::gui::TraactGuiApp::drawPatternPanel() {
+void traact::gui::TraactGuiApp::drawDataflowFilesPanel() {
     static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
+    ImGui::Begin("Dataflow files");
 
+    ImGui::SetNextItemOpen(true);
     if (ImGui::TreeNode("Loaded Dataflow")) {
 
         for (const auto &dataflow : dataflow_files_) {
@@ -466,12 +441,14 @@ void traact::gui::TraactGuiApp::drawPatternPanel() {
         ImGui::TreePop();
     }
 
+    ImGui::End();
 }
 
 void traact::gui::TraactGuiApp::drawDetailsPanel() {
 
+    ImGui::Begin("Details");
     std::visit(details_editor_, selected_traact_element_.selected);
-
+    ImGui::End();
 }
 
 void traact::gui::TraactGuiApp::saveConfig() {
@@ -530,16 +507,6 @@ void traact::gui::TraactGuiApp::newFile(const std::string &dataflow_json) {
 bool traact::gui::TraactGuiApp::onFrameStop() {
     // return true until it is ok to close all windows and stop the app
     return false;
-}
-void traact::gui::TraactGuiApp::drawRunPanel() {
-    ImGui::Begin("Run dataflow");
-    if(ImGui::Button("Start")){
-        if(current_dataflow_) {
-            current_dataflow_->startDataflow();
-        }
-    }
-    ImGui::End();
-
 }
 
 

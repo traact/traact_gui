@@ -9,7 +9,7 @@ class Traact(ConanFile):
     
     description = "GUI Editor for Traact"
     url = ""
-    license = "BSD 3-Clause"
+    license = "MIT"
     author = "Frieder Pankratz"
 
     short_paths = True

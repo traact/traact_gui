@@ -19,7 +19,7 @@ void MainApp::initImGui() const {
 
     ImGuiIO &gui_io = ImGui::GetIO();
     gui_io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    //gui_io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    gui_io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 
     // Setup Dear ImGui style
@@ -75,11 +75,9 @@ void MainApp::initOpenGl() {
     glViewport(0, 0, screen_width_, screen_height_);
 }
 void MainApp::blockingLoop() {
-
+    ImGuiIO &gui_io = ImGui::GetIO();
     while (running_) {
         glfwPollEvents();
-        glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
-        glClear(GL_COLOR_BUFFER_BIT);
 
         // feed inputs to dear imgui, start new frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -97,28 +95,29 @@ void MainApp::blockingLoop() {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
         if (should_stop_) {
-
             running_ = traact_app_.onFrameStop();
         } else {
             traact_app_.onFrame();
         }
 
 
-
-
-
-        // Render dear imgui into screen
         ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 
         int display_w, display_h;
         glfwGetFramebufferSize(window_, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
+        glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-//        GLFWwindow *backup_current_context = glfwGetCurrentContext();
-//        ImGui::UpdatePlatformWindows();
-//        ImGui::RenderPlatformWindowsDefault();
-//        glfwMakeContextCurrent(backup_current_context);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        if(gui_io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable){
+            GLFWwindow *backup_current_context = glfwGetCurrentContext();
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            glfwMakeContextCurrent(backup_current_context);
+        }
 
         glfwSwapBuffers(window_);
 
