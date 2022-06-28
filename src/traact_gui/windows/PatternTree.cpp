@@ -7,6 +7,7 @@ traact::gui::PatternTree::PatternTree(traact::gui::TraactGuiApp *traactApp) : tr
 
 void traact::gui::PatternTree::Draw() {
 
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(250, 250));
     ImGui::Begin("Pattern");
 
     //const auto& graphs = traact_app_->GetGraphInstances();
@@ -35,5 +36,6 @@ void traact::gui::PatternTree::Draw() {
     }
 
     ImGui::End();
+    ImGui::PopStyleVar();
 
 }

@@ -12,7 +12,7 @@ namespace traact::gui {
 class DebugRun {
  public:
     void draw();
-
+    void propertyChange();
     void setCurrentDataflow(std::shared_ptr<traact::gui::DataflowFile> dataflow);
  private:
     std::shared_ptr<traact::gui::DataflowFile> current_dataflow_;
@@ -20,7 +20,7 @@ class DebugRun {
     std::optional<std::shared_future<void>> facade_finished_;
     bool attach_debug_renderer_{true};
     std::string debug_sink_id_{"debug_sink"};
-    DebugRenderer debug_renderer_;
+    std::unique_ptr<DebugRenderer> debug_renderer_;
     bool canStart();
     bool canStop();
     void startDataflow();

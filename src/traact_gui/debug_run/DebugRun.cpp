@@ -10,7 +10,14 @@
 
 namespace traact::gui {
 void DebugRun::draw() {
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(250, 250));
     ImGui::Begin("Run dataflow");
+    if(current_dataflow_){
+        ImGui::Text("%s",current_dataflow_->getName());
+    } else {
+        ImGui::Text("No dataflow selected");
+    }
+
     ImGui::BeginDisabled(!canStart());
     if(ImGui::Button("Start")){
         startDataflow();
@@ -27,9 +34,10 @@ void DebugRun::draw() {
     ImGui::InputText("Debug Sink Pattern ID", &debug_sink_id_);
 
     ImGui::End();
+    ImGui::PopStyleVar();
 
     if(facade_finished_.has_value() && attach_debug_renderer_){
-        debug_renderer_.draw();
+        debug_renderer_->draw();
     }
 
     if(facade_finished_.has_value()){
@@ -47,7 +55,10 @@ void DebugRun::startDataflow() {
     facade_->loadDataflow(current_dataflow_->graph_editor_.Graph);
     facade_finished_ = facade_->getFinishedFuture();
 
-    connectDebugRenderer();
+    if(attach_debug_renderer_){
+        connectDebugRenderer();
+    }
+
 
 
 
@@ -57,11 +68,12 @@ void DebugRun::startDataflow() {
     start_thread.detach();
 }
 void DebugRun::connectDebugRenderer() {
+    debug_renderer_ = std::make_unique<DebugRenderer>();
     auto raw_sink = facade_->getComponentAs<component::facade::RawApplicationSyncSink>(debug_sink_id_);
-    auto config_callback = [local_renderer = &debug_renderer_](const auto& pattern_instance) {
+    auto config_callback = [local_renderer = debug_renderer_.get()](const auto& pattern_instance) {
         local_renderer->configureInstance(pattern_instance);
     };
-    auto data_callback = [local_renderer = &debug_renderer_](auto& data) {
+    auto data_callback = [local_renderer = debug_renderer_.get()](auto& data) {
         return local_renderer->processTimePoint(data);
     };
     raw_sink->setConfigCallback(config_callback);
@@ -76,5 +88,11 @@ bool DebugRun::canStart() {
 }
 bool DebugRun::canStop() {
     return facade_ != nullptr && facade_finished_.has_value();
+}
+void DebugRun::propertyChange() {
+    if(facade_){
+        facade_->propertyChanged();
+    }
+
 }
 } // traact

@@ -42,7 +42,6 @@ namespace traact::gui {
         std::vector<std::shared_ptr<DataflowFile>> dataflow_files_;
         std::shared_ptr<DataflowFile> current_dataflow_{nullptr};
         std::shared_ptr<DataflowFile> pending_dataflow_{nullptr};
-        bool show_run_panel_{false};
         SelectedTraactElement selected_traact_element_;
         DetailsEditor details_editor_;
         DebugRun debug_run_;
@@ -58,6 +57,7 @@ namespace traact::gui {
         void saveConfig();
         void loadConfig();
 
+        void onComponentPropertyChange();
     };
 }
 

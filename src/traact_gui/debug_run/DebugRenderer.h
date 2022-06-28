@@ -26,12 +26,14 @@ class DebugRenderer {
 
     bool processTimePoint(traact::buffer::ComponentBuffer &data);
     void setImageSize(ImVec2 image_size, const std::string &window_name);
-
     void setImageRenderSize(ImVec2 image_size, const std::string &window_name);
+    ImVec2 getScale(const std::string& window_name);
+    void setCameraCalibration(const vision::CameraCalibration& calibration, const std::string& window_name);
+    const vision::CameraCalibration& getCameraCalibration(const std::string& window_name);
  private:
     std::map<std::string, std::optional<ImVec2>> render_size_{};
     std::map<std::string, std::optional<ImVec2>> image_size_{};
-    std::map<std::string,std::optional<vision::CameraCalibration>> camera_calibration_{};
+    std::map<std::string, vision::CameraCalibration> camera_calibration_{};
 
     std::mutex command_lock_;
     std::map<std::string, std::vector<std::unique_ptr<DebugRenderComponent> > > render_components_;

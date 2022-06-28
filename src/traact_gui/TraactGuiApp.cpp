@@ -17,6 +17,8 @@ traact::gui::TraactGuiApp::TraactGuiApp(std::string config_file) : config_file_(
 
     available_patterns_ = facade.GetAllAvailablePatterns();
 
+    details_editor_.onChange = [this]() {debug_run_.propertyChange();};
+
     loadConfig();
 
 }
@@ -86,9 +88,7 @@ void traact::gui::TraactGuiApp::onFrame() {
     drawDataflowFilesPanel();
     drawDetailsPanel();
     drawDataflowPanel();
-    if(show_run_panel_){
-        debug_run_.draw();
-    }
+    debug_run_.draw();
 
 }
 
@@ -147,9 +147,6 @@ void traact::gui::TraactGuiApp::menuBar() {
             }
             ImGui::EndMenu();
         }
-        if (ImGui::Button("Run")) {
-            show_run_panel_ = !show_run_panel_;
-        }
         if (ImGui::BeginMenu("Help")) {
             if (ImGui::MenuItem("ImGui Demo Window")) {
                 show_imgui_demo = !show_imgui_demo;
@@ -178,6 +175,7 @@ void traact::gui::TraactGuiApp::drawLeftPanel() {
     static float pattern_height = 600.0f;
     static float detail_height = 400.0f;
 
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(250, 250));
     ImGui::Begin("Details");
     auto window_width = ImGui::GetWindowWidth();
     auto window_height = ImGui::GetWindowHeight();
@@ -197,6 +195,7 @@ void traact::gui::TraactGuiApp::drawLeftPanel() {
     ImGui::EndChild();
 
     ImGui::End();
+    ImGui::PopStyleVar();
 }
 
 void traact::gui::TraactGuiApp::drawDataflowPanel() {
@@ -245,6 +244,11 @@ void traact::gui::TraactGuiApp::drawDataflowPanel() {
                 if (visible) {
                     dataflow->drawContextMenu();
                     dataflow->draw();
+                    if(current_dataflow_ != dataflow){
+                        selected_traact_element_.setSelected(dataflow);
+                        current_dataflow_ = dataflow;
+                        debug_run_.setCurrentDataflow(current_dataflow_);
+                    }
                     ImGui::EndTabItem();
                 }
             }
@@ -370,6 +374,7 @@ void traact::gui::TraactGuiApp::drawDataflowPanel() {
 void traact::gui::TraactGuiApp::drawDataflowFilesPanel() {
     static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnDoubleClick;
 
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(250, 250));
     ImGui::Begin("Dataflow files");
 
     ImGui::SetNextItemOpen(true);
@@ -442,13 +447,16 @@ void traact::gui::TraactGuiApp::drawDataflowFilesPanel() {
     }
 
     ImGui::End();
+    ImGui::PopStyleVar();
 }
 
 void traact::gui::TraactGuiApp::drawDetailsPanel() {
 
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(250, 250));
     ImGui::Begin("Details");
     std::visit(details_editor_, selected_traact_element_.selected);
     ImGui::End();
+    ImGui::PopStyleVar();
 }
 
 void traact::gui::TraactGuiApp::saveConfig() {
@@ -507,6 +515,9 @@ void traact::gui::TraactGuiApp::newFile(const std::string &dataflow_json) {
 bool traact::gui::TraactGuiApp::onFrameStop() {
     // return true until it is ok to close all windows and stop the app
     return false;
+}
+void traact::gui::TraactGuiApp::onComponentPropertyChange() {
+
 }
 
 

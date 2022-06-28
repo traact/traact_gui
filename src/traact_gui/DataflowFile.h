@@ -10,6 +10,7 @@
 #include <traact/facade/Facade.h>
 #include <traact_gui/editor/PatternGraphEditor.h>
 #include "SelectedTraactElement.h"
+#include "traact_gui/debug_run/DebugRun.h"
 namespace traact::gui {
 
  struct DataflowFile : public std::enable_shared_from_this<DataflowFile> {

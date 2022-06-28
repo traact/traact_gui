@@ -8,7 +8,7 @@ class Traact(ConanFile):
     version = "0.0.1"
     
     description = "GUI Editor for Traact"
-    url = ""
+    url = "https://github.com/traact/traact_gui.git"
     license = "MIT"
     author = "Frieder Pankratz"
 

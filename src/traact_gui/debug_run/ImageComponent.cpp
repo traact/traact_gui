@@ -14,7 +14,7 @@ ImageComponent::ImageComponent(int port_index,
     port_index,
     port_name, window_name, renderer) {
 
-    render_image_command_ = [this]() {
+    render_command_ = [this]() {
         draw();
     };
 }
@@ -26,9 +26,7 @@ void ImageComponent::update(buffer::ComponentBuffer &buffer, std::vector<RenderC
         });
     }
 }
-RenderCommand ImageComponent::getNextCommand() {
-    return render_image_command_;
-}
+
 void ImageComponent::uploadImage(buffer::ComponentBuffer &data) {
     SPDLOG_TRACE("{0}: uploadImage {1}", port_name_, data.getTimestamp());
 

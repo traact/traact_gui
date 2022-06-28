@@ -18,7 +18,7 @@ class ImageComponent : public DebugRenderComponent{
     virtual ~ImageComponent() = default;
 
     void update(buffer::ComponentBuffer &buffer, std::vector<RenderCommand> &additional_commands) override;
-    RenderCommand getNextCommand() override;
+
  private:
     GLuint texture_;
     bool init_texture_{false};
@@ -28,7 +28,6 @@ class ImageComponent : public DebugRenderComponent{
     int upload_count_{0};
     Timestamp last_image_upload_{kTimestampZero};
     GLuint pbo_id_;
-    RenderCommand render_image_command_;
     void uploadImage(traact::buffer::ComponentBuffer &data);
     void draw();
 

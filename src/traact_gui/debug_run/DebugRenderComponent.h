@@ -3,7 +3,7 @@
 #ifndef TRAACT_GUI_SRC_TRAACT_GUI_DEBUG_RUN_DEBUGRENDERCOMPONENT_H_
 #define TRAACT_GUI_SRC_TRAACT_GUI_DEBUG_RUN_DEBUGRENDERCOMPONENT_H_
 #include <traact/traact.h>
-
+#include <traact/vision.h>
 
 namespace traact::gui {
 using RenderCommand = std::function<void(void)>;
@@ -21,8 +21,8 @@ class DebugRenderComponent {
     int getPriority();
 
     virtual void update(buffer::ComponentBuffer &buffer, std::vector<RenderCommand> &additional_commands) = 0;
-    virtual RenderCommand getNextCommand() = 0;
 
+    RenderCommand getNextCommand();
  protected:
     int priority_;
     int port_index_;
@@ -30,7 +30,7 @@ class DebugRenderComponent {
     std::string window_name_;
     DebugRenderer* renderer_;
 
-
+    RenderCommand render_command_;
 };
 
 } // traact

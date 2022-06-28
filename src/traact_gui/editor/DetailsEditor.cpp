@@ -25,6 +25,7 @@ void gui::DetailsEditor::operator()(std::shared_ptr<traact::pattern::instance::P
     if(!pattern_instance){
         return;
     }
+    bool has_changed{false};
     ImGui::Text("%s", pattern_instance->instance_id.c_str());
     for (auto& [group_name, group_index] : pattern_instance->port_group_name_to_index) {
         ImGui::Text("%s", group_name.c_str());
@@ -41,7 +42,7 @@ void gui::DetailsEditor::operator()(std::shared_ptr<traact::pattern::instance::P
                 }
 
                 if(parameter_value.is_boolean()){
-                    ImGui::Checkbox(parameter.key().c_str(), parameter_value.get_ptr<bool*>());
+                    has_changed |= ImGui::Checkbox(parameter.key().c_str(), parameter_value.get_ptr<bool*>());
                 } else if(parameter_value.is_number()) {
                     auto& parameter_min = parameter.value()["min_value"];
                     auto& parameter_max = parameter.value()["max_value"];
@@ -51,17 +52,17 @@ void gui::DetailsEditor::operator()(std::shared_ptr<traact::pattern::instance::P
                     }
 
                     if(parameter_value.is_number_float()){
-                        ImGui::SliderScalar(parameter_c_str, ImGuiDataType_Double,parameter_value.get_ptr<double*>(), parameter_min.get_ptr<double*>(), parameter_max.get_ptr<double*>() );
+                        has_changed |=ImGui::SliderScalar(parameter_c_str, ImGuiDataType_Double,parameter_value.get_ptr<double*>(), parameter_min.get_ptr<double*>(), parameter_max.get_ptr<double*>() );
                     } else if(parameter_value.is_number_unsigned()){
-                        ImGui::SliderScalar(parameter_c_str, ImGuiDataType_U64,parameter_value.get_ptr<uint64_t *>(), parameter_min.get_ptr<uint64_t*>(), parameter_max.get_ptr<uint64_t*>() );
+                        has_changed |=ImGui::SliderScalar(parameter_c_str, ImGuiDataType_U64,parameter_value.get_ptr<uint64_t *>(), parameter_min.get_ptr<uint64_t*>(), parameter_max.get_ptr<uint64_t*>() );
                     } else {
-                        ImGui::SliderScalar(parameter_c_str, ImGuiDataType_S64,parameter_value.get_ptr<int64_t *>(), parameter_min.get_ptr<int64_t*>(), parameter_max.get_ptr<int64_t*>() );
+                        has_changed |=ImGui::SliderScalar(parameter_c_str, ImGuiDataType_S64,parameter_value.get_ptr<int64_t *>(), parameter_min.get_ptr<int64_t*>(), parameter_max.get_ptr<int64_t*>() );
                     }
                 } else if(parameter_value.is_string()){
                     auto has_enum_values = parameter.value().find("enum_values");
                     std::string& string_value = parameter_value.get_ref<std::string&>();
                     if(has_enum_values == parameter.value().end()){
-                        ImGui::InputText(parameter.key().c_str(), parameter_value.get_ptr<std::string*>());
+                        has_changed |= ImGui::InputText(parameter.key().c_str(), parameter_value.get_ptr<std::string*>());
                     } else {
                         auto& enum_values = parameter.value()["enum_values"];
                         int selected{-1};
@@ -76,7 +77,7 @@ void gui::DetailsEditor::operator()(std::shared_ptr<traact::pattern::instance::P
                             }
                             items.emplace_back(current_enum_value.c_str());
                         }
-                        ImGui::Combo(parameter_c_str, &selected, items.data(), items.size());
+                        has_changed |=ImGui::Combo(parameter_c_str, &selected, items.data(), items.size());
                         if(prev_selected != selected && selected >= 0 && selected < items.size()){
                             parameter_value = std::string(items[selected]);
                         }
@@ -89,6 +90,10 @@ void gui::DetailsEditor::operator()(std::shared_ptr<traact::pattern::instance::P
             }
         }
 
+    }
+
+    if(has_changed && onChange){
+        onChange();
     }
 }
 } // traact

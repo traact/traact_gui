@@ -20,6 +20,8 @@ void MainApp::initImGui() const {
     ImGuiIO &gui_io = ImGui::GetIO();
     gui_io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     gui_io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    gui_io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
 
 
     // Setup Dear ImGui style

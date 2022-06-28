@@ -1,7 +1,12 @@
 /** Copyright (C) 2022  Frieder Pankratz <frieder.pankratz@gmail.com> **/
 
+#include "DebugRenderer.h"
+#include "CalibrationComponent.h"
 #include "DebugRenderComponent.h"
 
+traact::gui::RenderCommand traact::gui::DebugRenderComponent::getNextCommand() {
+    return render_command_;
+}
 namespace traact::gui {
 int DebugRenderComponent::getPriority() {
     return priority_;
