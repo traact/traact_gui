@@ -17,7 +17,10 @@ traact::gui::TraactGuiApp::TraactGuiApp(std::string config_file) : config_file_(
 
     available_patterns_ = facade.GetAllAvailablePatterns();
 
-    details_editor_.onChange = [this]() {debug_run_.propertyChange();};
+    details_editor_.onChange = [this](const std::string& instance_id) {
+        current_dataflow_->dirty = true;
+        debug_run_.parameterChanged(instance_id);
+    };
 
     loadConfig();
 
@@ -352,6 +355,10 @@ void traact::gui::TraactGuiApp::drawDataflowPanel() {
                                                  fmt::format("Save {0}", current->getNameString()),
                                                  "*.json {.json}");
                 show_save_dialog = true;
+            } else {
+                current->doSave();
+                save_queue.pop();
+                show_save_dialog = false;
             }
 
         }

@@ -17,6 +17,32 @@ void gui::DetailsEditor::operator()(std::shared_ptr<DataflowFile> &dataflow_file
         double max_freq = 100;
         ImGui::SliderScalar("Sensor frequency",ImGuiDataType_Double,&time_domain_config.sensor_frequency, &min_freq, &max_freq);
         ImGui::DragInt("Worker Count",&time_domain_config.cpu_count, 0.1f, -std::thread::hardware_concurrency(), 100);
+
+        const char* source_event_names[] = {"WAIT_FOR_BUFFER", "IMMEDIATE_RETURN"};
+        int source_event_index = static_cast<int>(time_domain_config.source_mode);
+        if(ImGui::Combo("Source Mode", &source_event_index, source_event_names, IM_ARRAYSIZE(source_event_names))) {
+            time_domain_config.source_mode = static_cast<SourceMode>(source_event_index);
+        }
+
+        const char* missing_event_names[] = {"WAIT_FOR_EVENT", "CANCEL_OLDEST"};
+        int missing_event_index = static_cast<int>(time_domain_config.missing_source_event_mode);
+        if(ImGui::Combo("Missing Event Mode", &missing_event_index, missing_event_names, IM_ARRAYSIZE(missing_event_names))) {
+            time_domain_config.missing_source_event_mode = static_cast<MissingSourceEventMode>(missing_event_index);
+        }
+
+        using namespace std::chrono;
+        int64_t max_offset = duration_cast<milliseconds>(time_domain_config.max_offset).count();
+        if(ImGui::InputScalar("Max offset (ms)", ImGuiDataType_S64, &max_offset)){
+            time_domain_config.max_offset = milliseconds (max_offset);
+        }
+        int64_t max_delay = duration_cast<milliseconds>(time_domain_config.max_delay).count();
+        if(ImGui::InputScalar("Max delay (ms)", ImGuiDataType_S64, &max_delay)){
+            time_domain_config.max_delay = milliseconds (max_delay);
+        }
+
+        //time_domain_config.max_offset
+        //time_domain_config.max_delay
+
     }
 
 
@@ -36,10 +62,10 @@ void gui::DetailsEditor::operator()(std::shared_ptr<traact::pattern::instance::P
                 auto& parameter_value = parameter.value()["value"];
                 auto& parameter_default = parameter.value()["default"];
 
-                if(parameter_default.type() != parameter_value.type()){
-                    ImGui::Text("Error: different type Value/Default %s", parameter_c_str);
-                    continue;
-                }
+//                if(parameter_default.type() != parameter_value.type()){
+//                    ImGui::Text("Error: different type Value/Default %s", parameter_c_str);
+//                    continue;
+//                }
 
                 if(parameter_value.is_boolean()){
                     has_changed |= ImGui::Checkbox(parameter.key().c_str(), parameter_value.get_ptr<bool*>());
@@ -47,17 +73,28 @@ void gui::DetailsEditor::operator()(std::shared_ptr<traact::pattern::instance::P
                     auto& parameter_min = parameter.value()["min_value"];
                     auto& parameter_max = parameter.value()["max_value"];
                     if(parameter_default.type() != parameter_min.type() || parameter_default.type() != parameter_max.type()){
-                        ImGui::Text("Error: different type Default/Min/Max %s", parameter_c_str);
-                        continue;
+                        if(parameter_value.is_number_float()){
+                            has_changed |=ImGui::InputDouble(parameter_c_str, parameter_value.get_ptr<double*>());
+                        } else if(parameter_value.is_number_unsigned()){
+                            uint64_t min{0};
+                            uint64_t max{1000};
+                            has_changed |=ImGui::SliderScalar(parameter_c_str, ImGuiDataType_U64,parameter_value.get_ptr<uint64_t *>(), &min, &max);
+                        } else {
+                            int64_t min{0};
+                            int64_t max{1000};
+                            has_changed |=ImGui::SliderScalar(parameter_c_str, ImGuiDataType_S64,parameter_value.get_ptr<int64_t *>(), &min, &max );
+                        }
+                    } else {
+                        if(parameter_value.is_number_float()){
+                            has_changed |=ImGui::SliderScalar(parameter_c_str, ImGuiDataType_Double,parameter_value.get_ptr<double*>(), parameter_min.get_ptr<double*>(), parameter_max.get_ptr<double*>() );
+                        } else if(parameter_value.is_number_unsigned()){
+                            has_changed |=ImGui::SliderScalar(parameter_c_str, ImGuiDataType_U64,parameter_value.get_ptr<uint64_t *>(), parameter_min.get_ptr<uint64_t*>(), parameter_max.get_ptr<uint64_t*>() );
+                        } else {
+                            has_changed |=ImGui::SliderScalar(parameter_c_str, ImGuiDataType_S64,parameter_value.get_ptr<int64_t *>(), parameter_min.get_ptr<int64_t*>(), parameter_max.get_ptr<int64_t*>() );
+                        }
                     }
 
-                    if(parameter_value.is_number_float()){
-                        has_changed |=ImGui::SliderScalar(parameter_c_str, ImGuiDataType_Double,parameter_value.get_ptr<double*>(), parameter_min.get_ptr<double*>(), parameter_max.get_ptr<double*>() );
-                    } else if(parameter_value.is_number_unsigned()){
-                        has_changed |=ImGui::SliderScalar(parameter_c_str, ImGuiDataType_U64,parameter_value.get_ptr<uint64_t *>(), parameter_min.get_ptr<uint64_t*>(), parameter_max.get_ptr<uint64_t*>() );
-                    } else {
-                        has_changed |=ImGui::SliderScalar(parameter_c_str, ImGuiDataType_S64,parameter_value.get_ptr<int64_t *>(), parameter_min.get_ptr<int64_t*>(), parameter_max.get_ptr<int64_t*>() );
-                    }
+
                 } else if(parameter_value.is_string()){
                     auto has_enum_values = parameter.value().find("enum_values");
                     std::string& string_value = parameter_value.get_ref<std::string&>();
@@ -93,7 +130,7 @@ void gui::DetailsEditor::operator()(std::shared_ptr<traact::pattern::instance::P
     }
 
     if(has_changed && onChange){
-        onChange();
+        onChange(pattern_instance->instance_id);
     }
 }
 } // traact

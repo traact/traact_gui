@@ -7,7 +7,7 @@
 #include <imgui_internal.h>
 #include "external/imgui_misc/imgui_stdlib.h"
 #include <traact/component/generic/RawApplicationSyncSink.h>
-
+#include <traact/util/Logging.h>
 namespace traact::gui {
 void DebugRun::draw() {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(250, 250));
@@ -32,6 +32,12 @@ void DebugRun::draw() {
 
     ImGui::Checkbox("Attach Debug Renderer", &attach_debug_renderer_);
     ImGui::InputText("Debug Sink Pattern ID", &debug_sink_id_);
+
+    const char* log_levels[] = {"trace", "debug", "info", "warn", "error"};
+
+    if(ImGui::Combo("log level", &log_level_, log_levels, IM_ARRAYSIZE(log_levels))) {
+        traact::util::initLogging(static_cast<spdlog::level::level_enum>(log_level_));
+    }
 
     ImGui::End();
     ImGui::PopStyleVar();
@@ -89,9 +95,10 @@ bool DebugRun::canStart() {
 bool DebugRun::canStop() {
     return facade_ != nullptr && facade_finished_.has_value();
 }
-void DebugRun::propertyChange() {
+void DebugRun::parameterChanged(const std::string &instance_id) {
     if(facade_){
-        facade_->propertyChanged();
+
+        facade_->parameterChanged(instance_id);
     }
 
 }

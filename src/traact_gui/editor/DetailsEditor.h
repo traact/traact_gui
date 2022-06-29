@@ -13,7 +13,7 @@ struct DetailsEditor {
     void operator()(std::shared_ptr<DataflowFile>& dataflow_file) const ;
     void operator()(std::shared_ptr<traact::pattern::instance::PatternInstance>& pattern_instance) const;
 
-    std::function<void(void)> onChange;
+    std::function<void(const std::string&)> onChange;
 };
 
 } // traact

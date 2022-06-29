@@ -12,7 +12,7 @@ namespace traact::gui {
 class DebugRun {
  public:
     void draw();
-    void propertyChange();
+    void parameterChanged(const std::string &instance_id);
     void setCurrentDataflow(std::shared_ptr<traact::gui::DataflowFile> dataflow);
  private:
     std::shared_ptr<traact::gui::DataflowFile> current_dataflow_;
@@ -21,6 +21,7 @@ class DebugRun {
     bool attach_debug_renderer_{true};
     std::string debug_sink_id_{"debug_sink"};
     std::unique_ptr<DebugRenderer> debug_renderer_;
+    int log_level_{SPDLOG_LEVEL_INFO};
     bool canStart();
     bool canStop();
     void startDataflow();
