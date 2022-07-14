@@ -17,6 +17,8 @@ void gui::DetailsEditor::operator()(std::shared_ptr<DataflowFile> &dataflow_file
         double max_freq = 100;
         ImGui::SliderScalar("Sensor frequency",ImGuiDataType_Double,&time_domain_config.sensor_frequency, &min_freq, &max_freq);
         ImGui::DragInt("Worker Count",&time_domain_config.cpu_count, 0.1f, -std::thread::hardware_concurrency(), 100);
+        uint64_t min_buffer{1}, max_buffer{10};
+        ImGui::SliderScalar("Buffer Count", ImGuiDataType_U64, &time_domain_config.ringbuffer_size, &min_buffer, &max_buffer);
 
         const char* source_event_names[] = {"WAIT_FOR_BUFFER", "IMMEDIATE_RETURN"};
         int source_event_index = static_cast<int>(time_domain_config.source_mode);

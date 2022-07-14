@@ -8,18 +8,19 @@
 #include <imgui_internal.h>
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-#include "opengl_shader.h"
-#include "file_manager.h"
+#include "traact_gui/opengl_shader.h"
+#include "traact_gui/file_manager.h"
 #include <stdio.h>
 #include <iostream>
 #include <vector>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <external/ImFileDialog/ImFileDialog.h>
-# include <external/imgui-node-editor/imgui_node_editor.h>
+#include "external/ImFileDialog/ImFileDialog.h"
+# include "external/imgui-node-editor/imgui_node_editor.h"
 #include <spdlog/spdlog.h>
 
 #include "TraactGuiApp.h"
+
 
 namespace traact::gui {
 class MainApp {
@@ -36,6 +37,7 @@ class MainApp {
     int screen_width_{0}, screen_height_{0};
     std::atomic_bool& should_stop_;
     bool running_{true};
+
     void init();
     void initFileDialog() const;
     void initOpenGl();

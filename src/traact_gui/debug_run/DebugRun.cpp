@@ -36,7 +36,9 @@ void DebugRun::draw() {
     const char* log_levels[] = {"trace", "debug", "info", "warn", "error"};
 
     if(ImGui::Combo("log level", &log_level_, log_levels, IM_ARRAYSIZE(log_levels))) {
-        traact::util::initLogging(static_cast<spdlog::level::level_enum>(log_level_));
+        //traact::util::initLogging(static_cast<spdlog::level::level_enum>(log_level_));
+        SPDLOG_INFO("set log level {0}", log_level_);
+        spdlog::set_level(static_cast<spdlog::level::level_enum>(log_level_));
     }
 
     ImGui::End();

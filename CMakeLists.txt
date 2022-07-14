@@ -20,14 +20,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR})
 
 set(TRAACT_GUI_SRC
         src/traact_gui/main.cpp
-        src/traact_gui/TraactGuiApp.h
-        src/traact_gui/TraactGuiApp.cpp
-        src/traact_gui/windows/PatternTree.h
-        src/traact_gui/windows/PatternTree.cpp
-        src/traact_gui/windows/SRG_DFG_Window.h
-        src/traact_gui/windows/SRG_DFG_Window.cpp
-
-
+        src/traact_gui/app/TraactGuiApp.h
+        src/traact_gui/app/TraactGuiApp.cpp
 
 
         src/traact_gui/file_manager.cpp
@@ -56,7 +50,7 @@ set(TRAACT_GUI_SRC
         src/traact_gui/editor/PatternGraphEditor.h
         src/traact_gui/editor/JsonEditorSerialization.h
         src/traact_gui/editor/JsonEditorSerialization.cpp src/traact_gui/editor/DetailsEditor.cpp src/traact_gui/editor/DetailsEditor.h
-        src/traact_gui/MainApp.cpp src/traact_gui/MainApp.h src/traact_gui/SelectedTraactElement.cpp src/traact_gui/SelectedTraactElement.h )
+        src/traact_gui/app/MainApp.cpp src/traact_gui/app/MainApp.h src/traact_gui/SelectedTraactElement.cpp src/traact_gui/SelectedTraactElement.h )
 
 set(IMGUI_BINDING_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/imgui_bindings/imgui_impl_glfw.h
         ${CMAKE_CURRENT_BINARY_DIR}/imgui_bindings/imgui_impl_glfw.cpp
@@ -88,7 +82,7 @@ set(IMGUI_EXTERNAL_SOURCES src/external/ImFileDialog/ImFileDialog.h
         src/external/imgui_misc/imgui_stdlib.cpp
 
         src/traact_gui/debug_run/DebugRun.cpp src/traact_gui/debug_run/DebugRun.h src/traact_gui/debug_run/DebugRenderer.cpp src/traact_gui/debug_run/DebugRenderer.h src/traact_gui/debug_run/DebugRenderComponent.cpp src/traact_gui/debug_run/DebugRenderComponent.h src/traact_gui/debug_run/ImageComponent.cpp src/traact_gui/debug_run/ImageComponent.h
-        src/traact_gui/debug_run/traact_opengl.h src/traact_gui/debug_run/KeyPointListComponent.cpp src/traact_gui/debug_run/KeyPointListComponent.h src/traact_gui/debug_run/Position3DComponent.cpp src/traact_gui/debug_run/Position3DComponent.h src/traact_gui/debug_run/CalibrationComponent.cpp src/traact_gui/debug_run/CalibrationComponent.h src/traact_gui/debug_run/Pose6DComponent.cpp src/traact_gui/debug_run/Pose6DComponent.h)
+        src/traact_gui/debug_run/traact_opengl.h src/traact_gui/debug_run/KeyPointListComponent.cpp src/traact_gui/debug_run/KeyPointListComponent.h src/traact_gui/debug_run/Position3DComponent.cpp src/traact_gui/debug_run/Position3DComponent.h src/traact_gui/debug_run/CalibrationComponent.cpp src/traact_gui/debug_run/CalibrationComponent.h src/traact_gui/debug_run/Pose6DComponent.cpp src/traact_gui/debug_run/Pose6DComponent.h src/traact_gui/app/Window.h src/traact_gui/state/ApplicationState.cpp src/traact_gui/state/ApplicationState.h src/traact_gui/app/Window.cpp src/traact_gui/state/OpenFiles.cpp src/traact_gui/state/OpenFiles.h src/traact_gui/window/MenuFile.cpp src/traact_gui/window/MenuFile.h)
 
 #find_package(imgui CONFIG)
 #find_package(glfw3 CONFIG)

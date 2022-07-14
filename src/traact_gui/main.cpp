@@ -1,8 +1,8 @@
-#include "MainApp.h"
+#include "traact_gui/app/MainApp.h"
 #include <spdlog/spdlog.h>
 #include <signal.h>
 #include <opencv2/core/utility.hpp>
-
+#include <traact/util/Logging.h>
 std::atomic_bool should_stop{false};
 
 void ctrlC(int i) {
@@ -15,6 +15,8 @@ void runApp(std::optional<std::string> &dataflow_file);
 int main(int argc, char** argv)
 {
     using namespace traact::gui;
+
+    traact::util::initLogging(spdlog::level::level_enum::trace);
 
     signal(SIGINT, ctrlC);
 

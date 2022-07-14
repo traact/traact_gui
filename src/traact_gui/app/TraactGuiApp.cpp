@@ -7,10 +7,10 @@
 #include <fstream>
 #include <utility>
 
-#include "ImGuiUtils.h"
+#include "traact_gui/ImGuiUtils.h"
 #include <implot.h>
-#include <external/ImFileDialog/ImFileDialog.h>
-#include <external/imgui-node-editor/imgui_node_editor.h>
+#include "external/ImFileDialog/ImFileDialog.h"
+#include "external/imgui-node-editor/imgui_node_editor.h"
 
 traact::gui::TraactGuiApp::TraactGuiApp(std::string config_file) : config_file_(std::move(config_file)) {
     facade::DefaultFacade facade;
@@ -208,11 +208,11 @@ void traact::gui::TraactGuiApp::drawDataflowPanel() {
         ImGuiTabBarFlags_FittingPolicyDefault_ | ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_AutoSelectNewTabs;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(250, 250));
-    ImGui::Begin("Dataflow graph", 0);
+    //ImGui::Begin("Dataflow graph", 0);
     // Submit Tab Bar and Tabs
     {
         //ImGui::BeginChild("##dataflow_file");
-        if (ImGui::BeginTabBar("##dataflow_tabs", tab_bar_flags)) {
+        //if (ImGui::BeginTabBar("##dataflow_tabs", tab_bar_flags)) {
             for (const auto &dataflow : dataflow_files_) {
                 if (!dataflow->open && dataflow->openPrev) {
                     ImGui::SetTabItemClosed(dataflow->getName());
@@ -235,7 +235,8 @@ void traact::gui::TraactGuiApp::drawDataflowPanel() {
                     debug_run_.setCurrentDataflow(current_dataflow_);
                 }
 
-                bool visible = ImGui::BeginTabItem(dataflow->getName(), &dataflow->open, tab_flags);
+                //bool visible = ImGui::BeginTabItem(dataflow->getName(), &dataflow->open, tab_flags);
+                ImGui::Begin(dataflow->getName());
 
                 // Cancel attempt to close when unsaved add to save queue so we can display a popup.
                 if (!dataflow->open && dataflow->dirty) {
@@ -244,7 +245,7 @@ void traact::gui::TraactGuiApp::drawDataflowPanel() {
                 }
 
 
-                if (visible) {
+                //if (visible) {
                     dataflow->drawContextMenu();
                     dataflow->draw();
                     if(current_dataflow_ != dataflow){
@@ -252,16 +253,17 @@ void traact::gui::TraactGuiApp::drawDataflowPanel() {
                         current_dataflow_ = dataflow;
                         debug_run_.setCurrentDataflow(current_dataflow_);
                     }
-                    ImGui::EndTabItem();
-                }
+                    //ImGui::EndTabItem();
+                //}
+                ImGui::End();
             }
 
-            ImGui::EndTabBar();
-        }
+            //ImGui::EndTabBar();
+        //}
         //ImGui::EndChild();
     }
 
-    ImGui::End();
+    //ImGui::End();
     ImGui::PopStyleVar(1);
 
     pending_dataflow_ = nullptr;

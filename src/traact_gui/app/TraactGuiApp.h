@@ -7,12 +7,16 @@
 #include <string>
 #include <map>
 #include <traact/pattern/instance/GraphInstance.h>
-#include <traact_gui/DataflowFile.h>
-#include <util/fileutil.h>
+#include "traact_gui/DataflowFile.h"
+#include "util/fileutil.h"
 #include <traact/util/CircularBuffer.h>
-#include "SelectedTraactElement.h"
-#include "editor/DetailsEditor.h"
-#include "debug_run/DebugRun.h"
+#include "traact_gui/SelectedTraactElement.h"
+#include "traact_gui/editor/DetailsEditor.h"
+#include "traact_gui/debug_run/DebugRun.h"
+
+#include "traact_gui/state/ApplicationState.h"
+#include "Window.h"
+
 
 namespace traact::gui {
 

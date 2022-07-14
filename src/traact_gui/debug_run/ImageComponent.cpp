@@ -30,7 +30,7 @@ void ImageComponent::update(buffer::ComponentBuffer &buffer, std::vector<RenderC
 void ImageComponent::uploadImage(buffer::ComponentBuffer &data) {
     SPDLOG_TRACE("{0}: uploadImage {1}", port_name_, data.getTimestamp());
 
-    const auto& image = data.getInput<vision::ImageHeader>(port_index_).getImage();
+    const auto& image = data.getInput<vision::ImageHeader>(port_index_).value();
     const auto& image_header = data.getInputHeader<vision::ImageHeader>(port_index_);
 
     if(data.getTimestamp() < last_image_upload_){

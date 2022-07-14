@@ -26,6 +26,8 @@ void MainApp::initImGui() const {
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
+    auto& style = ImGui::GetStyle();
+    style.WindowMinSize = ImVec2(320,240);
 
     // Setup Platform/Renderer bindings
     if (!ImGui_ImplGlfw_InitForOpenGL(window_, true)) {
@@ -86,10 +88,6 @@ void MainApp::blockingLoop() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-
-
-        // We demonstrate using the full viewport area or the work area (without menu-bars, task-bars etc.)
-        // Based on your use case you may want one of the other.
         const ImGuiViewport *viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->WorkPos);
         ImGui::SetNextWindowSize(viewport->WorkSize);
