@@ -11,7 +11,7 @@
 #include "util/fileutil.h"
 #include <traact/util/CircularBuffer.h>
 #include "traact_gui/SelectedTraactElement.h"
-#include "traact_gui/editor/DetailsEditor.h"
+
 #include "traact_gui/debug_run/DebugRun.h"
 
 #include "traact_gui/state/ApplicationState.h"
@@ -22,44 +22,23 @@ namespace traact::gui {
 
     class TraactGuiApp {
     public:
-        TraactGuiApp(std::string config_file);
+        TraactGuiApp();
 
         ~TraactGuiApp();
 
-        void onFrame();
+        void addWindow(Window::SharedPtr window);
 
-        void newFile();
-        void newFile(const std::string& dataflow_json);
-        void openFile(fs::path file);
-        const std::vector<std::string> & openFiles();
-        void closeFile(std::string file);
-        void closeAll();
+        void init();
+        void render();
+        bool renderStop();
 
-        bool onFrameStop();
+
+
      private:
-        std::string config_file_;
-        util::CircularBuffer<std::string, 5> recent_files_;
-        std::vector<std::string> open_files_;
-
-        std::vector<pattern::Pattern::Ptr> available_patterns_;
-
-        std::vector<std::shared_ptr<DataflowFile>> dataflow_files_;
-        std::shared_ptr<DataflowFile> current_dataflow_{nullptr};
-        std::shared_ptr<DataflowFile> pending_dataflow_{nullptr};
-        SelectedTraactElement selected_traact_element_;
-        DetailsEditor details_editor_;
-        DebugRun debug_run_;
+        std::vector<Window::SharedPtr> windows_;
+        std::vector<bool> render_windows_;
 
         void menuBar();
-
-        void drawLeftPanel();
-        void drawDataflowPanel();
-
-        void drawDataflowFilesPanel();
-        void drawDetailsPanel();
-
-        void saveConfig();
-        void loadConfig();
 
         void onComponentPropertyChange();
     };

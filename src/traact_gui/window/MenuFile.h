@@ -10,14 +10,10 @@ namespace traact::gui::window {
 
 class MenuFile : public Window {
  public:
-
-
-
- private:
+    MenuFile(state::ApplicationState &state);
+    virtual void render() override;
 
 };
-
-using MenuFilePtr = std::shared_ptr<MenuFile>();
 
 } // traact
 

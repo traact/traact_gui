@@ -112,7 +112,7 @@ struct Example:
         ed::DestroyEditor(m_Context);
     }
 
-    void onFrame(float deltaTime) override
+    void render(float deltaTime) override
     {
         auto& io = ImGui::GetIO();
 

@@ -1,6 +1,11 @@
 /** Copyright (C) 2022  Frieder Pankratz <frieder.pankratz@gmail.com> **/
 #include "MainApp.h"
 #include "TraactGuiApp.h"
+#include "traact_gui/window/MenuFile.h"
+#include "traact_gui/window/WindowDetails.h"
+#include "traact_gui/window/WindowDataflow.h"
+#include "traact_gui/window/WindowOpenFiles.h"
+#include "traact_gui/window/WindowRun.h"
 
 static void GlfwErrorCallback(int error, const char *description) {
     SPDLOG_ERROR("Glfw Error {0}: {1}\n", error, description);
@@ -12,6 +17,8 @@ void MainApp::init() {
     initOpenGl();
     initImGui();
     initFileDialog();
+    initState();
+    initWindows();
 }
 void MainApp::initImGui() const {
     IMGUI_CHECKVERSION();
@@ -95,10 +102,12 @@ void MainApp::blockingLoop() {
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
         if (should_stop_) {
-            running_ = traact_app_.onFrameStop();
+            running_ = traact_app_.renderStop();
         } else {
-            traact_app_.onFrame();
+            traact_app_.render();
         }
+
+        application_state_.update();
 
 
         ImGui::Render();
@@ -160,9 +169,27 @@ MainApp::MainApp(std::atomic_bool &should_stop) : should_stop_(should_stop) {
     init();
 }
 void MainApp::loadDataflow(std::string dataflow_file) {
-    traact_app_.openFile(dataflow_file);
+    application_state_.openFile(dataflow_file);
 }
 MainApp::~MainApp() {
     dispose();
+}
+void MainApp::initState() {
+    facade::DefaultFacade facade;
+
+    application_state_.loadConfig();
+    application_state_.available_patterns = facade.GetAllAvailablePatterns();
+}
+void MainApp::initWindows() {
+
+    traact_app_.addWindow(std::make_shared<window::MenuFile>(application_state_));
+    traact_app_.addWindow(std::make_shared<window::WindowOpenFiles>(application_state_));
+    traact_app_.addWindow(std::make_shared<window::WindowDataflow>(application_state_));
+    traact_app_.addWindow(std::make_shared<window::WindowRun>(application_state_));
+
+    auto details_window = std::make_shared<window::WindowDetails>(application_state_);
+    traact_app_.addWindow(details_window);
+
+
 }
 }

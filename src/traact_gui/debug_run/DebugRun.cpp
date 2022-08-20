@@ -8,10 +8,11 @@
 #include "external/imgui_misc/imgui_stdlib.h"
 #include <traact/component/generic/RawApplicationSyncSink.h>
 #include <traact/util/Logging.h>
+
 namespace traact::gui {
 void DebugRun::draw() {
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(250, 250));
-    ImGui::Begin("Run dataflow");
+
+    ImGui::Begin("Run");
     if(current_dataflow_){
         ImGui::Text("%s",current_dataflow_->getName());
     } else {
@@ -41,8 +42,12 @@ void DebugRun::draw() {
         spdlog::set_level(static_cast<spdlog::level::level_enum>(log_level_));
     }
 
+    if(dataflow_state_){
+        drawDataflowState();
+    }
+
     ImGui::End();
-    ImGui::PopStyleVar();
+
 
     if(facade_finished_.has_value() && attach_debug_renderer_){
         debug_renderer_->draw();
@@ -59,7 +64,6 @@ void DebugRun::startDataflow() {
     facade_ = std::make_shared<DefaultFacade>();
 
 
-
     facade_->loadDataflow(current_dataflow_->graph_editor_.Graph);
     facade_finished_ = facade_->getFinishedFuture();
 
@@ -70,14 +74,16 @@ void DebugRun::startDataflow() {
 
 
 
-    std::thread start_thread([local_facade = facade_]() {
+    std::thread start_thread([local_facade = facade_, this]() {
         local_facade->start();
+        dataflow_state_ = local_facade->getDataflowState();
     });
     start_thread.detach();
 }
 void DebugRun::connectDebugRenderer() {
     debug_renderer_ = std::make_unique<DebugRenderer>();
     auto raw_sink = facade_->getComponentAs<component::facade::RawApplicationSyncSink>(debug_sink_id_);
+
     auto config_callback = [local_renderer = debug_renderer_.get()](const auto& pattern_instance) {
         local_renderer->configureInstance(pattern_instance);
     };
@@ -87,8 +93,15 @@ void DebugRun::connectDebugRenderer() {
     raw_sink->setConfigCallback(config_callback);
     raw_sink->setCallback(data_callback);
     raw_sink->setInvalidCallback(data_callback);
+
+    user_events_ = facade_->findComponents<component::SyncUserEventComponent>();
+
 }
 void DebugRun::setCurrentDataflow(std::shared_ptr<traact::gui::DataflowFile> dataflow) {
+    auto isFacadeRunning = facade_ && facade_->isRunning();
+    if(!dataflow || isFacadeRunning){
+        return;
+    }
     current_dataflow_ = dataflow;
 }
 bool DebugRun::canStart() {
@@ -102,6 +115,19 @@ void DebugRun::parameterChanged(const std::string &instance_id) {
 
         facade_->parameterChanged(instance_id);
     }
+
+}
+void DebugRun::drawDataflowState() {
+    ImGui::BeginChild("State");
+
+    for(auto& event : user_events_){
+        if(ImGui::Button(event->getName().c_str())) {
+            event->fireEvent(0);
+        }
+    }
+
+
+    ImGui::EndChild();
 
 }
 } // traact

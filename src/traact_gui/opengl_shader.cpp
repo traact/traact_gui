@@ -97,3 +97,6 @@ void Shader::checkLinkingErr() {
 		std::cout << "Error Linking Shader Program:\n" << infoLog << std::endl;
 	}
 }
+unsigned int Shader::getId() {
+    return id_;
+}

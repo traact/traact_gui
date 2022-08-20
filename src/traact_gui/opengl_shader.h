@@ -13,6 +13,7 @@ public:
 	template<typename T> void setUniform(const std::string& name, T val);
 	template<typename T> void setUniform(const std::string& name, T val1, T val2);
 	template<typename T> void setUniform(const std::string& name, T val1, T val2, T val3);
+    unsigned int getId();
 
 private:
 	void checkCompileErr();

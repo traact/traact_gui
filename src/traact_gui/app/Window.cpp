@@ -4,14 +4,20 @@
 
 namespace traact::gui {
 
-void Window::onInit() {
+Window::Window(std::string name, state::ApplicationState &state) : state_(state), name_(name) {}
+void Window::init() {
 
 }
-void Window::onRender() {
+void Window::render() {
 
 }
-void Window::onDestroy() {
+bool Window::renderStop() {
+    return false;
+}
+void Window::destroy() {
 
 }
-Window::Window(state::ApplicationState &state) : state_(state) {}
+const std::string &Window::name() const{
+    return name_;
+}
 }

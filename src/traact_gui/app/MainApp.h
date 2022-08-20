@@ -20,7 +20,7 @@
 #include <spdlog/spdlog.h>
 
 #include "TraactGuiApp.h"
-
+#include "traact_gui/state/ApplicationState.h"
 
 namespace traact::gui {
 class MainApp {
@@ -32,17 +32,22 @@ class MainApp {
     void loadDataflow(std::string dataflow_file);
  private:
     GLFWwindow *window_;
-    TraactGuiApp traact_app_{"traact_gui_config.json"};
+    state::ApplicationState application_state_{"traact_gui_config.json"};
+    TraactGuiApp traact_app_;
     std::string glsl_version_;
-    int screen_width_{0}, screen_height_{0};
+    int screen_width_{}, screen_height_{};
     std::atomic_bool& should_stop_;
     bool running_{true};
+
 
     void init();
     void initFileDialog() const;
     void initOpenGl();
     void initImGui() const;
     void dispose() const;
+
+    void initState();
+    void initWindows();
 };
 }
 

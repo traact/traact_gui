@@ -6,6 +6,7 @@
 #include <traact/pattern/instance/GraphInstance.h>
 #include "DFGElements.h"
 #include "traact_gui/DataflowFile.h"
+#include "traact_gui/SelectedTraactElement.h"
 
 namespace traact::gui {
 
@@ -13,7 +14,7 @@ struct DetailsEditor {
     void operator()(std::shared_ptr<DataflowFile>& dataflow_file) const ;
     void operator()(std::shared_ptr<traact::pattern::instance::PatternInstance>& pattern_instance) const;
 
-    std::function<void(const std::string&)> onChange;
+    std::function<void(const TraactElement&)> onChange;
 };
 
 } // traact

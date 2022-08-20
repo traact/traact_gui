@@ -8,7 +8,25 @@ void gui::DetailsEditor::operator()(std::shared_ptr<DataflowFile> &dataflow_file
         return;
     }
     auto& graph_instance = dataflow_file->graph_editor_.Graph;
-    ImGui::InputText("Name", &graph_instance->name);
+    ImGui::Text("%s", graph_instance->name.c_str());
+    ImGui::SameLine();
+
+    static std::string dataflow_name;
+    if(ImGui::Button("Change name")){
+        ImGui::OpenPopup("change_dataflow_name_popup");
+        dataflow_name = graph_instance->name;
+    }
+    if (ImGui::BeginPopup("change_dataflow_name_popup"))
+    {
+        ImGui::InputText(" new name", &dataflow_name);
+        if(ImGui::IsItemDeactivatedAfterEdit()){
+            graph_instance->name = dataflow_name;
+        }
+
+        ImGui::EndPopup();
+    }
+
+    bool has_changed{false};
 
     for (auto& time_domain : graph_instance->timedomain_configs) {
         ImGui::Text("Time Domain %lu",time_domain.first);
@@ -16,35 +34,50 @@ void gui::DetailsEditor::operator()(std::shared_ptr<DataflowFile> &dataflow_file
         double min_freq = 0;
         double max_freq = 100;
         ImGui::SliderScalar("Sensor frequency",ImGuiDataType_Double,&time_domain_config.sensor_frequency, &min_freq, &max_freq);
+        has_changed |= ImGui::IsItemDeactivatedAfterEdit();
         ImGui::DragInt("Worker Count",&time_domain_config.cpu_count, 0.1f, -std::thread::hardware_concurrency(), 100);
+        has_changed |= ImGui::IsItemDeactivatedAfterEdit();
         uint64_t min_buffer{1}, max_buffer{10};
         ImGui::SliderScalar("Buffer Count", ImGuiDataType_U64, &time_domain_config.ringbuffer_size, &min_buffer, &max_buffer);
+        has_changed |= ImGui::IsItemDeactivatedAfterEdit();
 
         const char* source_event_names[] = {"WAIT_FOR_BUFFER", "IMMEDIATE_RETURN"};
         int source_event_index = static_cast<int>(time_domain_config.source_mode);
+
         if(ImGui::Combo("Source Mode", &source_event_index, source_event_names, IM_ARRAYSIZE(source_event_names))) {
             time_domain_config.source_mode = static_cast<SourceMode>(source_event_index);
+            has_changed = true;
         }
 
         const char* missing_event_names[] = {"WAIT_FOR_EVENT", "CANCEL_OLDEST"};
         int missing_event_index = static_cast<int>(time_domain_config.missing_source_event_mode);
         if(ImGui::Combo("Missing Event Mode", &missing_event_index, missing_event_names, IM_ARRAYSIZE(missing_event_names))) {
             time_domain_config.missing_source_event_mode = static_cast<MissingSourceEventMode>(missing_event_index);
+            has_changed = true;
         }
 
         using namespace std::chrono;
         int64_t max_offset = duration_cast<milliseconds>(time_domain_config.max_offset).count();
-        if(ImGui::InputScalar("Max offset (ms)", ImGuiDataType_S64, &max_offset)){
+
+        ImGui::InputScalar("Max offset (ms)", ImGuiDataType_S64, &max_offset);
+        if(ImGui::IsItemDeactivatedAfterEdit()){
             time_domain_config.max_offset = milliseconds (max_offset);
+            has_changed = true;
         }
         int64_t max_delay = duration_cast<milliseconds>(time_domain_config.max_delay).count();
-        if(ImGui::InputScalar("Max delay (ms)", ImGuiDataType_S64, &max_delay)){
+        ImGui::InputScalar("Max delay (ms)", ImGuiDataType_S64, &max_delay);
+        if(ImGui::IsItemDeactivatedAfterEdit()){
             time_domain_config.max_delay = milliseconds (max_delay);
+            has_changed = true;
         }
 
         //time_domain_config.max_offset
         //time_domain_config.max_delay
 
+    }
+
+    if(has_changed && onChange){
+        onChange({dataflow_file});
     }
 
 
@@ -132,7 +165,7 @@ void gui::DetailsEditor::operator()(std::shared_ptr<traact::pattern::instance::P
     }
 
     if(has_changed && onChange){
-        onChange(pattern_instance->instance_id);
+        onChange({pattern_instance});
     }
 }
 } // traact

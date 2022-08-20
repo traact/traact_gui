@@ -11,15 +11,27 @@ namespace traact::gui {
 
 struct DataflowFile;
 
+template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+
+using TraactElement = std::variant<std::shared_ptr<DataflowFile>, std::shared_ptr<traact::pattern::instance::PatternInstance> >;
+
 struct SelectedTraactElement {
-    std::variant<std::shared_ptr<DataflowFile>, std::shared_ptr<traact::pattern::instance::PatternInstance> >selected;
+    SelectedTraactElement() = default;
+    template<typename T> SelectedTraactElement(const T& value){
+        setSelected(value);
+    }
+    ~SelectedTraactElement() = default;
+
+    TraactElement selected;
+    std::shared_ptr<DataflowFile> current_dataflow;
 
     template<typename T>
     void setSelected(const T &selected_element) {
         if (isSelected(selected_element)) {
             return;
         }
-        SPDLOG_INFO("set seltected element {0}", selected_element->getName());
+        SPDLOG_TRACE("set selected element to {0}", selected_element->getName());
         selected = selected_element;
     }
 
@@ -34,7 +46,14 @@ struct SelectedTraactElement {
         }
     }
 
+    bool isCurrentDataflow(const std::shared_ptr<DataflowFile> dataflow);
+
 };
+
+template<>
+void SelectedTraactElement::setSelected(const std::shared_ptr<DataflowFile> &selected_element);
+
+
 
 } // traact
 

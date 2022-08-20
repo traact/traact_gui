@@ -14,6 +14,7 @@
 #include <nodesoup.hpp>
 #include <unordered_map>
 
+
 namespace ed = ax::NodeEditor;
 
 static inline ImRect ImGui_GetItemRect() {
@@ -21,6 +22,9 @@ static inline ImRect ImGui_GetItemRect() {
 }
 
 namespace traact::gui {
+
+
+
 
 DataflowFile::DataflowFile(std::string name,
                            SelectedTraactElement &t_selected_traact_element)
@@ -33,6 +37,7 @@ DataflowFile::DataflowFile(std::string name,
     graph_editor_.Graph = std::make_shared<DefaultInstanceGraph>(std::move(name));
     facade_ = std::make_shared<facade::DefaultFacade>();
     buildNodes();
+    current_state_ = {};
 }
 
 DataflowFile::DataflowFile(fs::path file,
@@ -54,6 +59,7 @@ DataflowFile::DataflowFile(fs::path file,
     ns::from_json(json_graph, graph_editor_);
 
     buildNodes();
+    current_state_ = json_graph;
 }
 
 DataflowFile::DataflowFile(nlohmann::json graph,
@@ -69,6 +75,7 @@ DataflowFile::DataflowFile(nlohmann::json graph,
     ns::from_json(graph, graph_editor_);
     graph_editor_.Graph->name = graph_editor_.Graph->name + " (copy)";
     buildNodes();
+    current_state_ = graph;
 }
 
 DataflowFile::~DataflowFile() {
@@ -706,6 +713,7 @@ void DataflowFile::buildNodes() {
     graph_editor_.CreateNodes();
     graph_editor_.CreateConnections();
 
+
 }
 
 void DataflowFile::layoutDfgNodes() {
@@ -1070,31 +1078,30 @@ bool DataflowFile::canRedo() const {
 }
 
 void DataflowFile::saveState() {
+    SPDLOG_INFO("save state");
     nlohmann::json json_graph;
     ns::to_json(json_graph, graph_editor_);
-    undo_buffer_.push(json_graph);
+    undo_buffer_.push(current_state_);
+    current_state_ = json_graph;
     dirty = true;
 }
 
 void DataflowFile::undo() {
-    nlohmann::json json_graph;
-    ns::to_json(json_graph, graph_editor_);
-    redo_buffer_.push(json_graph);
+    redo_buffer_.push(current_state_);
 
-    nlohmann::json state = undo_buffer_.top();
+    current_state_ = undo_buffer_.top();
     graph_editor_.Graph = std::make_shared<DefaultInstanceGraph>();
-    ns::from_json(state, graph_editor_);
+    ns::from_json(current_state_, graph_editor_);
     buildNodes();
     undo_buffer_.pop();
-
 }
 
 void DataflowFile::redo() {
     saveState();
 
-    nlohmann::json state = redo_buffer_.top();
+    current_state_ = redo_buffer_.top();
     graph_editor_.Graph = std::make_shared<DefaultInstanceGraph>();
-    ns::from_json(state, graph_editor_);
+    ns::from_json(current_state_, graph_editor_);
     buildNodes();
     redo_buffer_.pop();
 }
@@ -1168,6 +1175,7 @@ void DataflowFile::startDataflow() {
     facade_->start();
 
 }
+
 
 }
 

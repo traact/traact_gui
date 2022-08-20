@@ -9,18 +9,27 @@
 namespace traact::gui {
 class Window {
  public:
-    Window(state::ApplicationState &state);
+    using SharedPtr = std::shared_ptr<Window>;
+    Window(std::string name, state::ApplicationState &state);
     virtual ~Window() = default;
 
-    virtual void onInit();
-    virtual void onRender();
-    virtual void onDestroy();
+    const std::string& name() const;
+
+
+    virtual void init();
+    virtual void render();
+    /**
+     *
+     * @return true if the updateMovement loop should keep running
+     */
+    virtual bool renderStop();
+    virtual void destroy();
  protected:
+    std::string name_;
     state::ApplicationState& state_;
 
-};
 
-using WindowPtr = std::shared_ptr<Window>;
+};
 }
 
 #endif //TRAACT_GUI_SRC_TRAACT_GUI_EDITORELEMENT_H_

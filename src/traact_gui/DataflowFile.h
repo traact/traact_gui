@@ -9,9 +9,11 @@
 #include <traact/traact.h>
 #include <traact/facade/Facade.h>
 #include <traact_gui/editor/PatternGraphEditor.h>
+
 #include "SelectedTraactElement.h"
-#include "traact_gui/debug_run/DebugRun.h"
+
 namespace traact::gui {
+
 
  struct DataflowFile : public std::enable_shared_from_this<DataflowFile> {
         explicit DataflowFile(std::string name,
@@ -96,8 +98,12 @@ namespace traact::gui {
 
         std::stack<nlohmann::json> undo_buffer_;
         std::stack<nlohmann::json> redo_buffer_;
+        nlohmann::json current_state_;
 
     };
+
+
+
 }
 
 #endif //TRAACT_GUI_SRC_TRAACT_GUI_DATAFLOWFILE_H_
