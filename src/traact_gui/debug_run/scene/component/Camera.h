@@ -29,12 +29,16 @@ class Camera : public Component {
     glm::mat4 getProjectionMatrix() const;
     glm::mat4 getVPMatrix() const;
 
+    const float* getViewMatrixPtr() const;
+    const float* getProjectionMatrixPtr() const;
+
  private:
     glm::mat4 projection_;
+    glm::mat4 view_;
 
     float move_speed_{1.0f};
     float rotate_speed_{0.1f};
-    float fov_{45.0f};
+    float fov_{60.0f};
 
     glm::vec3 camera_pos_{0.0f, 0.0f,  3.0f};
     glm::vec3 camera_front_{0.0f, 0.0f, -1.0f};

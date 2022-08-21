@@ -26,11 +26,13 @@ class ApplicationData {
         return new_buffer;
     }
 
+    cudaStream_t getCudaStream();
  private:
-    bool initialized_{false};
+
     cudaStream_t stream_;
     std::vector<std::shared_ptr<DataPort>> data_buffers_;
 
+    bool initialized_{false};
 
 };
 

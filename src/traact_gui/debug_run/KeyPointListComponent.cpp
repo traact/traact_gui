@@ -25,6 +25,7 @@ void gui::KeyPointListComponent::update(buffer::ComponentBuffer &buffer,
 }
 
 void gui::KeyPointListComponent::draw(const vision::KeyPointList &data) {
+    ImGui::Begin(window_name_.c_str(), nullptr, ImGuiWindowFlags_NoDocking);
     auto win_pos = ImGui::GetWindowPos()+ImGui::GetWindowContentRegionMin();
     ImVec2 scale = renderer_->getScale(window_name_);
 
@@ -36,5 +37,6 @@ void gui::KeyPointListComponent::draw(const vision::KeyPointList &data) {
         draw_list->AddQuad(point_pos+ImVec2(1,1)*size, point_pos+ImVec2(1,-1)*size, point_pos+ImVec2(-1,-1)*size, point_pos+ImVec2(-1,1)*size,ImColor(255, 0, 0), 2 );
         //draw_list->AddCircle(point_pos, point.size*scale.x, ImColor(255, 0, 0));
     }
+    ImGui::End();
 }
 } // traact

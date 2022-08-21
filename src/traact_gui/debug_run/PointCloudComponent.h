@@ -4,7 +4,7 @@
 #define TRAACT_GUI_SRC_TRAACT_GUI_DEBUG_RUN_POINTCLOUDCOMPONENT_H_
 
 #include "DebugRenderComponent.h"
-#include <traact/pointCloud.h>
+#include <traact/point_cloud.h>
 
 namespace traact::gui {
 class PointCloudComponent : public DebugRenderComponent {

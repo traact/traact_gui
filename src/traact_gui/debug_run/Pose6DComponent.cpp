@@ -24,6 +24,7 @@ void Pose6DComponent::update(buffer::ComponentBuffer &buffer, std::vector<Render
 }
 
 void Pose6DComponent::draw(const spatial::Pose6D &data) {
+    ImGui::Begin(window_name_.c_str(), nullptr, ImGuiWindowFlags_NoDocking);
     auto win_pos = ImGui::GetWindowPos()+ImGui::GetWindowContentRegionMin();
     ImVec2 scale = renderer_->getScale(window_name_);
     const auto& calibration = renderer_->getCameraCalibration(window_name_);
@@ -58,5 +59,6 @@ void Pose6DComponent::draw(const spatial::Pose6D &data) {
                        win_pos + pzimgui * scale,
                        ImColor(0, 0, 255),
                        2);
+    ImGui::End();
 }
 }

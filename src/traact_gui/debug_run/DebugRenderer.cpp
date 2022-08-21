@@ -26,7 +26,7 @@ void DebugRenderer::draw() {
         for (auto &[window_name, all_commands] : render_commands_) {
             auto &additional = additional_commands_[window_name];
 
-            ImGui::Begin(window_name.c_str(), nullptr, ImGuiWindowFlags_NoDocking);
+
 
             if (!additional.empty()) {
                 for (auto &command : additional) {
@@ -39,7 +39,6 @@ void DebugRenderer::draw() {
             for (auto &command : all_commands) {
                 command();
             }
-            ImGui::End();
         }
 
         if (additional_commands_processed) {

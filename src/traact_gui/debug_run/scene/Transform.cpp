@@ -26,4 +26,7 @@ void Transform::setLocalPose(glm::mat4 pose) {
     pose_ = pose;
 
 }
+float *Transform::getLocalPosePtr() {
+    return glm::value_ptr(pose_);
+}
 } // traact

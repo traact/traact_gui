@@ -15,12 +15,11 @@ namespace traact::gui::scene::component {
 class PoseSource : public Component{
  public:
     PoseSource(const std::shared_ptr<Object> &object,std::string name);
-    void setPosePort(int port_index);
+    void setSource(application_data::PoseSourcePtr source);
 
-    void update(buffer::ComponentBuffer &buffer, std::vector<RenderCommand> &additional_commands) override;
+    void update() override;
 
  private:
-    int port_index_pose_;
     application_data::PoseSourcePtr pose_source_;
 
 };

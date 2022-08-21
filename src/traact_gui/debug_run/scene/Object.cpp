@@ -4,16 +4,16 @@
 #include "Window.h"
 
 namespace traact::gui::scene {
-Object::Object(Window* window) : transform_(std::make_shared<Transform>()), window_(window){
+Object::Object(const std::string &name, Window *window) : transform_(std::make_shared<Transform>()), window_(window), name_(name){
 
 }
 void Object::init() {
 
 }
-void Object::update(buffer::ComponentBuffer &buffer, std::vector<RenderCommand> &additional_commands) {
+void Object::update() {
     for(auto& component : components_){
         if(component.second->active){
-            component.second->update(buffer, additional_commands);
+            component.second->update();
         }
 
     }
@@ -47,6 +47,9 @@ std::shared_ptr<component::Camera> Object::getMainCamera() const{
 }
 void Object::addComponent(const std::string &name, Component::SharedPtr component) {
     components_.emplace(name, component);
+}
+const std::string &Object::getName() const {
+    return name_;
 }
 
 } // traact

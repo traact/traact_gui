@@ -4,6 +4,7 @@
 #include "scene/component/RenderPointCloud.h"
 #include "scene/component/RenderCoordinateSystem.h"
 #include "scene/component/PoseSource.h"
+#include "scene/component/IdentityRotation.h"
 
 #include "traact_gui/application_data/application_data.h"
 
@@ -12,6 +13,7 @@ DebugSceneWindow::DebugSceneWindow(const std::string &window_name,
                                    DebugRenderer *renderer) : DebugRenderComponent(100, 0, "invalid", window_name, renderer) {
 
     render_command_ = [this]() {
+        window_.update();
         window_.draw();
     };
 
@@ -19,10 +21,26 @@ DebugSceneWindow::DebugSceneWindow(const std::string &window_name,
     auto origin_object = window_.addObject("origin");
     origin_object->addComponent<scene::component::RenderCoordinateSystem>("coordinate_frame" );
 
+    auto& camera_transform = window_.getMainCamera()->getTransform();
+    auto& camera_object = window_.getMainCamera()->getObject();
+
+    auto hud_object = window_.addObject("hud");
+    auto hud_coordinate_frame = hud_object->addComponent<scene::component::RenderCoordinateSystem>("coordinate_frame" );
+    hud_object->addComponent<scene::component::IdentityRotation>("IdentityRotation" );
+
+    hud_coordinate_frame->scale_ = 0.03;
+    hud_object->getTransform()->setParent(camera_transform);
+    glm::mat4 hud_pose(1.0);
+    hud_pose[3].x = 0.16;
+    hud_pose[3].y = 0.09;
+    hud_pose[3].z = -0.25;
+    hud_object->getTransform()->setLocalPose(hud_pose);
+
+
 
 }
 void DebugSceneWindow::update(buffer::ComponentBuffer &buffer, std::vector<RenderCommand> &additional_commands) {
-    window_.update(buffer, additional_commands);
+    window_.update();
 
     additional_commands.emplace_back([&app_data = traact_app_data_, &buffer](){
        app_data.processTimePoint(buffer);
@@ -56,10 +74,12 @@ void DebugSceneWindow::addPointCloud(std::shared_ptr<scene::Object> scene_object
                            pattern::instance::PortInstance::ConstPtr const &port) {
 
     auto component = scene_object->getComponent<scene::component::RenderPointCloud>("cloud_render");
+    auto source = traact_app_data_.addDataPort<application_data::source::OpenGlTextureSource>(port);
+
     if(port_segmented[3] == "vertex"){
-        component->setVertexPort(port->getPortIndex());
+        component->setVertexSource(source);
     } else if(port_segmented[3] == "color"){
-        component->setColorPort(port->getPortIndex());
+        component->setColorSource(source);
     } else {
         SPDLOG_ERROR("unsupported scene point cloud data: {0}", port_segmented[3]);
     }
@@ -79,7 +99,7 @@ void DebugSceneWindow::addPose(scene::Object::SharedPtr object,
 
     auto component = object->getComponent<scene::component::PoseSource>("pose_source");
     auto pose_source = traact_app_data_.addDataPort<application_data::PoseSource >(port);
-    component->setPosePort(port->getPortIndex());
+    component->setSource(pose_source);
 
     object->getTransform()->setParent(parent_object->getTransform());
 

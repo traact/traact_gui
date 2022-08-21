@@ -23,6 +23,7 @@ void Position3DComponent::update(buffer::ComponentBuffer &buffer, std::vector<Re
 }
 
 void Position3DComponent::draw(const vision::Position3DList &data) {
+    ImGui::Begin(window_name_.c_str(), nullptr, ImGuiWindowFlags_NoDocking);
     auto win_pos = ImGui::GetWindowPos()+ImGui::GetWindowContentRegionMin();
     ImVec2 scale = renderer_->getScale(window_name_);
     const auto& calibration = renderer_->getCameraCalibration(window_name_);
@@ -34,5 +35,6 @@ void Position3DComponent::draw(const vision::Position3DList &data) {
         point_pos = win_pos + point_pos * scale;
         draw_list->AddCircle(point_pos, 7, ImColor(0, 84, 240));
     }
+    ImGui::End();
 }
 } // traact

@@ -14,8 +14,10 @@ class DataPort {
     DataPort(ApplicationData *application_data, pattern::instance::PortInstance::ConstPtr const &port);
     virtual ~DataPort() = default;
     virtual bool processTimePoint(traact::buffer::ComponentBuffer &data) = 0;
+    bool isInitialized() const;
  protected:
     ApplicationData* application_data_;
+    bool initialized_{false};
     int port_index_;
 
 };

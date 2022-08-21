@@ -69,6 +69,7 @@ void ImageComponent::uploadImage(buffer::ComponentBuffer &data) {
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 void ImageComponent::draw() {
+    ImGui::Begin(window_name_.c_str(), nullptr, ImGuiWindowFlags_NoDocking);
     ImVec2 avail_size = ImGui::GetContentRegionAvail();
     if (avail_size.x < 10) {
         avail_size.x = 320;
@@ -79,5 +80,6 @@ void ImageComponent::draw() {
 
     glBindTexture(GL_TEXTURE_2D, texture_);
     ImGui::Image(reinterpret_cast<void *>( static_cast<intptr_t>( texture_ )), avail_size);
+    ImGui::End();
 }
 } // traact

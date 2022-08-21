@@ -14,11 +14,11 @@ namespace traact::gui::scene {
  public:
     using SharedPtr = std::shared_ptr<Object>;
 
-    Object(Window* window);
+    Object(const std::string &name, Window *window);
     ~Object() = default;
 
     void init();
-    void update(buffer::ComponentBuffer &buffer, std::vector<RenderCommand> &additional_commands);
+    void update();
     void draw();
     void drawGui();
     void stop();
@@ -50,10 +50,12 @@ namespace traact::gui::scene {
     void addComponent(const std::string& name, Component::SharedPtr component);
 
     std::shared_ptr<component::Camera> getMainCamera() const;
+     const std::string &getName() const;
 
- private:
+  private:
     Transform::SharedPtr transform_;
      Window* window_;
+     std::string name_;
      std::map<std::string,Component::SharedPtr> components_;
 };
 

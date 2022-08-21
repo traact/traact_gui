@@ -19,32 +19,54 @@ Window::Window()  {
 }
 
 void Window::draw() {
+    ImGui::Begin("Scene", nullptr, window_flags_);
     init();
 
     render();
 
-    //ImGui::Begin(window_name_, nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDocking);
-
+    ImGuizmo::BeginFrame();
 
     glBindTexture(GL_TEXTURE_2D, render_texture_);
     ImVec2 avail_size = ImGui::GetContentRegionAvail();
+    ImVec2 p = ImGui::GetCursorScreenPos();
     ImGui::Image(reinterpret_cast<void *>( static_cast<intptr_t>( render_texture_ )), avail_size, ImVec2(0,1), ImVec2(1,0));
 
-    //ImGui::End();
+    static const float identityMatrix[16] =
+        { 1.f, 0.f, 0.f, 0.f,
+          0.f, 1.f, 0.f, 0.f,
+          0.f, 0.f, 1.f, 0.f,
+          0.f, 0.f, 0.f, 1.f };
+    ImGui::SetCursorScreenPos(p);
+    ImGuizmo::SetOrthographic(false);
+    ImGuizmo::SetDrawlist();
 
+    static ImGuiWindowFlags gizmo_window_flags = 0;
+    float window_width = (float)ImGui::GetWindowWidth();
+    float window_height = (float)ImGui::GetWindowHeight();
+    ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, window_width, window_height);
+    updateWindowFlags();
 
-    drawSceneSettings();
+    if(render_grid_){
+        ImGuizmo::DrawGrid(camera_->getViewMatrixPtr(), camera_->getProjectionMatrixPtr(),identityMatrix , 100.f);
+    }
 
+    draw_edit_transform();
+    drawSceneGraph();
+
+    ImGui::End();
 }
 
 
 
-void Window::drawSceneSettings() {
+void Window::drawSceneGraph() {
     auto isRoot = [](const auto& value){
         return !value.second->getTransform()->getParent();
     };
 
-    ImGui::Begin("Scene Settings", nullptr, ImGuiWindowFlags_NoDocking);
+    ImGui::Begin("Scene Graph", nullptr, ImGuiWindowFlags_NoDocking);
+
+
+
     auto root_object = std::find_if(objects_.begin(), objects_.end(), isRoot);
     ImGui::SetNextItemOpen(true);
     if(ImGui::TreeNode("Root"))  {
@@ -59,14 +81,27 @@ void Window::drawSceneSettings() {
 }
 
 void Window::drawSceneSettings(std::map<std::string, scene::Object::SharedPtr>::iterator & name_object) {
-    static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+    static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+
+
 
     auto isParentOf = [parent = name_object->second->getTransform()](const auto& value){
         return value.second->getTransform()->getParent() == parent;
     };
 
-    if(ImGui::TreeNodeEx(name_object->second.get(), base_flags, "%s", name_object->first.c_str())) {
-        name_object->second->drawGui();
+    int gizmo_count{0};
+
+    ImGuiTreeNodeFlags node_flags = base_flags;
+    const bool is_selected = current_gizmo_object_ == name_object->second;
+    if (is_selected){
+        node_flags |= ImGuiTreeNodeFlags_Selected;
+    }
+
+
+    if(ImGui::TreeNodeEx(name_object->second.get(), node_flags, "%s", name_object->first.c_str())) {
+        if (ImGui::IsItemClicked()){
+            current_gizmo_object_ = name_object->second;
+        }
 
         auto child_object = std::find_if(objects_.begin(), objects_.end(), isParentOf);
         while(child_object != objects_.end() ){
@@ -74,8 +109,63 @@ void Window::drawSceneSettings(std::map<std::string, scene::Object::SharedPtr>::
             child_object = std::find_if (++child_object, objects_.end(), isParentOf);
         }
         ImGui::TreePop();
+    } else {
+        if (ImGui::IsItemClicked()){
+            current_gizmo_object_ = name_object->second;
+        }
     }
 
+
+}
+void Window::draw_edit_transform() {
+
+    ImGui::Begin("Scene Edit", nullptr);
+    ImGui::Checkbox("Render Grid", &render_grid_);
+    if(current_gizmo_object_){
+        ImGui::Text("Transform %s",current_gizmo_object_->getName().c_str());
+        float* matrix = current_gizmo_object_->getTransform()->getLocalPosePtr();
+        if (ImGui::RadioButton("#Translate", current_gizmo_operation_ == ImGuizmo::TRANSLATE)){
+            current_gizmo_operation_ = ImGuizmo::OPERATION::TRANSLATE;
+        }
+        ImGui::SameLine();
+        if (ImGui::RadioButton("#Rotate", current_gizmo_operation_ == ImGuizmo::ROTATE)){
+            current_gizmo_operation_ = ImGuizmo::ROTATE;
+        }
+        ImGui::SameLine();
+        if (ImGui::RadioButton("#Scale", current_gizmo_operation_ == ImGuizmo::SCALE)) {
+            current_gizmo_operation_ = ImGuizmo::SCALE;
+        }
+
+        float matrixTranslation[3], matrixRotation[3], matrixScale[3];
+        ImGuizmo::DecomposeMatrixToComponents(matrix, matrixTranslation, matrixRotation, matrixScale);
+        ImGui::SliderFloat3("#Tr", matrixTranslation, -10.0, 10.0);
+        ImGui::SliderFloat3("#Rt", matrixRotation, -180.0, 180.0);
+        ImGui::SliderFloat3("#Sc", matrixScale, 0.0, 2.0);
+        ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, matrix);
+        if (current_gizmo_operation_ != ImGuizmo::SCALE)
+        {
+            if (ImGui::RadioButton("#Local", current_gizmo_mode_ == ImGuizmo::LOCAL))
+                current_gizmo_mode_ = ImGuizmo::LOCAL;
+            ImGui::SameLine();
+            if (ImGui::RadioButton("#World", current_gizmo_mode_ == ImGuizmo::WORLD))
+                current_gizmo_mode_ = ImGuizmo::WORLD;
+        }
+
+        current_gizmo_object_->drawGui();
+
+        ImGuizmo::Manipulate(
+            camera_->getViewMatrixPtr(), camera_->getProjectionMatrixPtr(),
+            current_gizmo_operation_,
+            current_gizmo_mode_, matrix, NULL, NULL, NULL, NULL);
+
+    } else {
+        ImGui::Text("Transform");
+        ImGui::Text("No Object selected");
+    }
+
+
+
+    ImGui::End();
 
 }
 
@@ -125,7 +215,7 @@ void Window::render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glMatrixMode(GL_PROJECTION);
-    glLoadMatrixf(glm::value_ptr(camera_->getVPMatrix()));
+    glLoadMatrixf(glm::value_ptr(camera_->getProjectionMatrix()));
 
 
     for(auto& object : objects_){
@@ -137,9 +227,9 @@ void Window::render() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
-void Window::update(buffer::ComponentBuffer &buffer, std::vector<RenderCommand> &additional_commands) {
+void Window::update() {
     for(auto& object : objects_){
-        object.second->update(buffer, additional_commands);
+        object.second->update();
     }
 }
 std::shared_ptr<component::Camera> Window::getMainCamera() const{
@@ -154,9 +244,17 @@ Object::SharedPtr Window::findObject(const std::string &object_name) const {
     }
 }
 Object::SharedPtr Window::addObject(const std::string &object_name) {
-    auto object = std::make_shared<Object>(this);
+    auto object = std::make_shared<Object>(object_name, this);
     objects_.emplace(object_name, object);
     return object;
+}
+void Window::updateWindowFlags() {
+    if(ImGuizmo::IsOver() || ImGuizmo::IsUsing()) {
+        window_flags_ =  ImGuiWindowFlags_NoMove;
+    } else {
+        window_flags_ = ImGuiWindowFlags_NoDocking;
+    };
+
 }
 
 } // traact

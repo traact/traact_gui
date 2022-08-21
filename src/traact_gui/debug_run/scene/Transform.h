@@ -16,6 +16,7 @@ class Transform {
     ~Transform();
 
     [[nodiscard]] glm::mat4 getLocalPose() const;
+    [[nodiscard]] float* getLocalPosePtr() ;
     [[nodiscard]] glm::mat4 getWorldPose() const;
     void setLocalPose(glm::mat4 pose);
 

@@ -23,12 +23,14 @@ class Component {
  public:
     using SharedPtr = std::shared_ptr<Component>;
     explicit Component(std::shared_ptr<Object> object, std::string name);
-    virtual void update(buffer::ComponentBuffer &buffer, std::vector<RenderCommand> &additional_commands);
+    virtual void update();
     virtual void draw();
     virtual void drawGui();
 
     bool active{true};
     const char* getName() const;
+    const std::shared_ptr<Object> &getObject() const;
+    const std::shared_ptr<Transform> &getTransform() const;
 
  protected:
     std::shared_ptr<Object> object_;

@@ -22,13 +22,14 @@
 
 #include "Component.h"
 #include "Object.h"
+#include <ImGuizmo.h>
 namespace traact::gui::scene {
 
 class Window {
  public:
     Window();
+    void update();
     void draw();
-    void update(buffer::ComponentBuffer &buffer, std::vector<RenderCommand> &additional_commands);
     [[nodiscard]] std::shared_ptr<traact::gui::scene::component::Camera> getMainCamera() const;
     Object::SharedPtr findObject(const std::string& object_name) const;
     Object::SharedPtr addObject(const std::string& object_name);
@@ -47,12 +48,20 @@ class Window {
 
     std::map<std::string, scene::Object::SharedPtr> objects_;
 
+    bool render_grid_{true};
+    ImGuizmo::OPERATION current_gizmo_operation_{ImGuizmo::OPERATION::TRANSLATE};
+    ImGuizmo::MODE current_gizmo_mode_{ImGuizmo::LOCAL};
+    int window_flags_{ImGuiWindowFlags_NoDocking};
+    scene::Object::SharedPtr current_gizmo_object_;
+
 
     void render();
     void init();
 
-    void drawSceneSettings();
+    void drawSceneGraph();
     void drawSceneSettings(std::map<std::string, scene::Object::SharedPtr>::iterator  & name_object);
+    void draw_edit_transform();
+    void updateWindowFlags();
 };
 
 

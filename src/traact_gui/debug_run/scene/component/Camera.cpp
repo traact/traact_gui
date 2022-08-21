@@ -7,6 +7,7 @@
 namespace traact::gui::scene::component {
 Camera::Camera(const std::shared_ptr<Object> &object,std::string name) : Component(object, std::move(name)) {
     updateProjection();
+    transform_->setLocalPose(glm::inverse(getViewMatrix()));
 }
 void Camera::updateProjection() { projection_ = glm::perspective(glm::radians(fov_), 16.0f/9.0f, 0.1f, 100.0f); }
 
@@ -33,7 +34,7 @@ float Camera::getMoveSpeed() const {
     return delta_time_ * move_speed_;
 }
 glm::mat4 Camera::getViewMatrix() const {
-    return glm::lookAt(camera_pos_, camera_pos_ + camera_front_, camera_up_);
+    return view_;
 }
 void Camera::mouseRotate(float dx, float dy) {
 
@@ -87,23 +88,31 @@ void Camera::updateMovement() {
             mouseRotate(io.MouseDelta.x, io.MouseDelta.y);
         }
     }
+
+    view_ = glm::lookAt(camera_pos_, camera_pos_ + camera_front_, camera_up_);
 }
 glm::mat4 Camera::getProjectionMatrix()  const{
     return projection_;
 }
 glm::mat4 Camera::getVPMatrix() const {
-    return projection_ * getViewMatrix();
+    return projection_ * view_;
 }
 
 void Camera::draw() {
     updateMovement();
     updateProjection();
-    transform_->setLocalPose(getViewMatrix());
+    transform_->setLocalPose(glm::inverse(getViewMatrix()));
 }
 void Camera::drawGui() {
     ImGui::SliderFloat("TranslationSpeed", &move_speed_, 0.0f, 1.0f);
     ImGui::SliderFloat("RotationSpeed", &rotate_speed_, 0.0f, 1.0f);
     ImGui::SliderFloat("FOV", &fov_, 15.0f, 90.0f);
+}
+const float *Camera::getViewMatrixPtr() const {
+    return glm::value_ptr(view_);
+}
+const float *Camera::getProjectionMatrixPtr() const {
+    return glm::value_ptr(projection_);
 }
 
 } // traact
