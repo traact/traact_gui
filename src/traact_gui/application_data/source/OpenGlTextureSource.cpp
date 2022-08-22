@@ -17,6 +17,10 @@ OpenGlTextureSource::OpenGlTextureSource(ApplicationData *application_data,
 
 bool OpenGlTextureSource::processTimePoint(traact::buffer::ComponentBuffer &data) {
 
+    if(!data.isInputValid(port_index_)){
+        return true;
+    }
+
     const auto &cuda_image = data.getInput<vision::GpuImageHeader>(port_index_).value();
     const auto &image_header = data.getInputHeader<vision::GpuImageHeader>(port_index_);
 
@@ -30,6 +34,7 @@ bool OpenGlTextureSource::processTimePoint(traact::buffer::ComponentBuffer &data
         checkOpenGLErrors(glBindTexture(GL_TEXTURE_2D, opengl_texture_));
         checkOpenGLErrors(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
         checkOpenGLErrors(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        SPDLOG_INFO("initialize with texture info: internal format {0} width {1} height {2} format {3}",opengl_internal_format_, image_header.width, image_header.height, opengl_format_);
         checkOpenGLErrors(glTexImage2D(GL_TEXTURE_2D, 0, opengl_internal_format_, image_header.width, image_header.height, 0,
                                        opengl_format_, GL_UNSIGNED_BYTE, 0));
         checkCudaErrors(cudaGraphicsGLRegisterImage(&cuda_resource_,
@@ -56,6 +61,10 @@ bool OpenGlTextureSource::processTimePoint(traact::buffer::ComponentBuffer &data
     return true;
 }
 void OpenGlTextureSource::bind(int tex_id) {
+
+    if(!initialized_){
+        return;
+    }
 
     checkOpenGLErrors(glActiveTexture(GL_TEXTURE0+tex_id));
     checkOpenGLErrors(glBindTexture(GL_TEXTURE_2D, opengl_texture_));

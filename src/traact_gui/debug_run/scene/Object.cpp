@@ -21,19 +21,25 @@ void Object::update() {
 void Object::draw() {
     for(auto& component : components_){
         if(component.second->active){
+
             component.second->draw();
+
         }
     }
 }
 void Object::drawGui() {
     for(auto& component : components_){
-        ImGui::BeginGroup();
+
+        //ImGui::BeginChild(ImGui::GetID(component.second.get()), ImVec2(0,260), true);
+
         ImGui::Text("%s",component.second->getName());
-        ImGui::PushID(component.second.get());
+        ImGui::SameLine();
+        ImGui::PushID(&component.second->active);
         ImGui::Checkbox("Active", &component.second->active);
         ImGui::PopID();
         component.second->drawGui();
-        ImGui::EndGroup();
+        ImGui::Separator();
+        //ImGui::EndChild();
     }
 }
 void Object::stop() {
