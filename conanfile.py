@@ -57,11 +57,11 @@ class Traact(ConanFile):
         self.requires("nodesoup/cci.20200905")
         self.requires("open3d/0.15.0r1@camposs/stable")
         self.requires("glm/cci.20220420")
-        self.requires("magnum/2020.06-r1@camposs/stable")
-        self.requires("corrade/2020.06@camposs/stable")
-        self.requires("magnum-integration/2020.06@camposs/stable")
-        self.requires("magnum-plugins/2020.06@camposs/stable")
-        self.requires("zlib/1.2.12")
+        #self.requires("magnum/2020.06-r1@camposs/stable")
+        #self.requires("corrade/2020.06@camposs/stable")
+        #self.requires("magnum-integration/2020.06@camposs/stable")
+        #self.requires("magnum-plugins/2020.06@camposs/stable")
+        #self.requires("zlib/1.2.12")
 
 
     def imports(self):

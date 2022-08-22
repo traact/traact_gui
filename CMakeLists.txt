@@ -188,11 +188,11 @@ target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::nodesoup)
 target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::open3d)
 target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::glm)
 
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::zlib)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::corrade)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::magnum)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::magnum-integration)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::magnum-plugins)
+#target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::zlib)
+#target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::corrade)
+#target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::magnum)
+#target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::magnum-integration)
+#target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::magnum-plugins)
 
 target_link_libraries(${CONAN_PACKAGE_NAME} CUDA::cudart)
 
