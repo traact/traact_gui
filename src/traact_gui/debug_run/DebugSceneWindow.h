@@ -21,6 +21,10 @@ class DebugSceneWindow : public DebugRenderComponent{
     void addDebugObject(const std::vector<std::string> &port_segmented,
                         pattern::instance::PortInstance::ConstPtr const &port);
 
+    template<class T>
+    void addDebugObject(const std::vector<std::string> &name_segmented,
+                        T &pattern_instance);
+
  private:
     scene::Window window_;
     application_data::ApplicationData traact_app_data_;
@@ -34,6 +38,7 @@ class DebugSceneWindow : public DebugRenderComponent{
                  const std::vector<std::string> &port_segmented,
                  pattern::instance::PortInstance::ConstPtr const &port);
 };
+
 
 } // traact
 

@@ -9,6 +9,7 @@
 #include <traact/component/generic/RawApplicationSyncSink.h>
 #include <traact/util/Logging.h>
 
+
 namespace traact::gui {
 void DebugRun::draw() {
 
@@ -82,19 +83,10 @@ void DebugRun::startDataflow() {
 }
 void DebugRun::connectDebugRenderer() {
     debug_renderer_ = std::make_unique<DebugRenderer>();
-    auto raw_sink = facade_->getComponentAs<component::facade::RawApplicationSyncSink>(debug_sink_id_);
-
-    auto config_callback = [local_renderer = debug_renderer_.get()](const auto& pattern_instance) {
-        local_renderer->configureInstance(pattern_instance);
-    };
-    auto data_callback = [local_renderer = debug_renderer_.get()](auto& data) {
-        return local_renderer->processTimePoint(data);
-    };
-    raw_sink->setConfigCallback(config_callback);
-    raw_sink->setCallback(data_callback);
-    raw_sink->setInvalidCallback(data_callback);
 
     user_events_ = facade_->findComponents<component::SyncUserEventComponent>();
+
+    debug_renderer_->init(*facade_, debug_sink_id_);
 
 }
 void DebugRun::setCurrentDataflow(std::shared_ptr<traact::gui::DataflowFile> dataflow) {

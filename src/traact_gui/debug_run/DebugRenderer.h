@@ -15,6 +15,7 @@
 #include "DebugRenderComponent.h"
 #include "traact_gui/debug_run/DebugSceneWindow.h"
 
+#include <traact/userEvent/component/SyncUserEventComponent.h>
 
 
 namespace traact::gui {
@@ -25,6 +26,7 @@ class DebugRenderer {
 
  public:
     DebugRenderer();
+    void init(DefaultFacade &facade, const std::string &debug_sink_id);
     void draw();
     void configureInstance(const pattern::instance::PatternInstance &pattern_instance);
     bool processTimePoint(traact::buffer::ComponentBuffer &data);
@@ -32,6 +34,7 @@ class DebugRenderer {
     void setImageRenderSize(ImVec2 image_size, const std::string &window_name);
     ImVec2 getScale(const std::string& window_name);
     void setCameraCalibration(const vision::CameraCalibration& calibration, const std::string& window_name);
+
     const vision::CameraCalibration& getCameraCalibration(const std::string& window_name);
 
  private:
@@ -46,6 +49,9 @@ class DebugRenderer {
     WaitForInit additional_commands_processed_;
 
     std::shared_ptr<DebugSceneWindow> scene_window_;
+
+    std::vector<std::shared_ptr<component::SyncUserEventComponent>> user_events_;
+
 
 
 
@@ -62,6 +68,10 @@ class DebugRenderer {
     void addWindowCalibration(const std::string &window_name,
                               const std::vector<std::string> &port_segmented,
                               pattern::instance::PortInstance::ConstPtr const &port);
+    std::vector<std::string> segmentPort(const std::string &port_name) const;
+
+    template<class T>
+    void addSceneObject(T& pattern_instance);
 };
 
 } // traact

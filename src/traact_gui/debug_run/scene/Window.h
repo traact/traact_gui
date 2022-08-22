@@ -33,6 +33,7 @@ class Window {
     [[nodiscard]] std::shared_ptr<traact::gui::scene::component::Camera> getMainCamera() const;
     Object::SharedPtr findObject(const std::string& object_name) const;
     Object::SharedPtr addObject(const std::string& object_name);
+    Object::SharedPtr getObject(const std::string& object_name);
  private:
 
     constexpr static const int render_width_{1280};

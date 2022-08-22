@@ -1,5 +1,6 @@
 /** Copyright (C) 2022  Frieder Pankratz <frieder.pankratz@gmail.com> **/
 
+
 #include "DebugRenderer.h"
 #include "CalibrationComponent.h"
 #include "ImageComponent.h"
@@ -7,11 +8,39 @@
 #include "Position3DComponent.h"
 #include "Pose6DComponent.h"
 #include "PointCloudComponent.h"
+#include <traact/component/generic/RawApplicationSyncSink.h>
+#include <traact/component/generic/FileReaderWriter.h>
 
 namespace traact::gui {
 DebugRenderer::DebugRenderer() : scene_window_(std::make_shared<DebugSceneWindow>("DebugScene", this)) {
     render_components_["DebugScene"].emplace_back(scene_window_);
 }
+
+void DebugRenderer::init(DefaultFacade &facade, const std::string &debug_sink_id) {
+    auto raw_sink = facade.getComponentAs<component::facade::RawApplicationSyncSink>(debug_sink_id);
+
+    auto config_callback = [this](const auto& pattern_instance) {
+        configureInstance(pattern_instance);
+    };
+    auto data_callback = [this](auto& data) {
+        return processTimePoint(data);
+    };
+    raw_sink->setConfigCallback(config_callback);
+    raw_sink->setCallback(data_callback);
+    raw_sink->setInvalidCallback(data_callback);
+
+    user_events_ = facade.findComponents<component::SyncUserEventComponent>();
+    auto calib_reads = facade.findComponents<component::FileReaderWriterRead<spatial::Pose6DHeader>>();
+    auto calib_writes = facade.findComponents<component::FileReaderWriterWrite<spatial::Pose6DHeader>>();
+
+    for(auto& pattern_instance : calib_reads){
+        addSceneObject(pattern_instance);
+    }
+    for(auto& pattern_instance : calib_writes){
+        addSceneObject(pattern_instance);
+    }
+}
+
 void DebugRenderer::draw() {
 
 
@@ -53,6 +82,7 @@ void DebugRenderer::draw() {
 
 
 }
+
 void DebugRenderer::configureInstance(const pattern::instance::PatternInstance &pattern_instance) {
     const static std::string kDefaultName{"Default_0_"};
     for (const auto &port : pattern_instance.getConsumerPorts(kDefaultTimeDomain)) {
@@ -65,14 +95,8 @@ void DebugRenderer::configureInstance(const pattern::instance::PatternInstance &
         }
 
         port_name.erase(0, kDefaultName.length());
+        auto port_segmented = segmentPort(port_name);
 
-        std::stringstream port_stream(port_name);
-        std::string segment;
-        std::vector<std::string> port_segmented;
-
-        while (std::getline(port_stream, segment, '_')) {
-            port_segmented.push_back(segment);
-        }
 
         if (port_segmented.size() < 3) {
             SPDLOG_ERROR(
@@ -85,7 +109,7 @@ void DebugRenderer::configureInstance(const pattern::instance::PatternInstance &
         } else if (window_type == "scene") {
             addScene(port_segmented, port);
         } else {
-            SPDLOG_ERROR("unkown window tpye {0}", window_type);
+            SPDLOG_ERROR("unknown window type {0}", window_type);
         }
 
     }
@@ -109,6 +133,17 @@ void DebugRenderer::configureInstance(const pattern::instance::PatternInstance &
     }
 
 }
+
+std::vector<std::string> DebugRenderer::segmentPort(const std::string &port_name) const {
+    std::vector<std::string> port_segmented;
+    std::stringstream port_stream(port_name);
+    std::string segment;
+    while (std::getline(port_stream, segment, '_')) {
+        port_segmented.push_back(segment);
+    }
+    return port_segmented;
+}
+
 bool DebugRenderer::processTimePoint(buffer::ComponentBuffer &data) {
 
     {
@@ -157,7 +192,7 @@ ImVec2 DebugRenderer::getScale(const std::string &window_name) {
     if (image_size.has_value() && render_size.has_value()) {
         return render_size.value() / image_size.value();
     } else {
-        return ImVec2(1.0, 1.0);
+        return {1.0, 1.0};
     }
 }
 const vision::CameraCalibration &DebugRenderer::getCameraCalibration(const std::string &window_name) {
@@ -221,5 +256,17 @@ void DebugRenderer::addWindowPose(const std::string &window_name,
     }
 
 }
-
+template<class T>
+void DebugRenderer::addSceneObject(T& pattern_instance) {
+    auto segmented_name = segmentPort(pattern_instance->getName());
+    if(segmented_name.empty()){
+        SPDLOG_ERROR("component name is empty");
+        return;
+    }
+    if(segmented_name[0] != "scene"){
+        SPDLOG_INFO("skipping non scene pattern: {0}", pattern_instance->getName());
+        return;
+    }
+    scene_window_->addDebugObject(segmented_name, pattern_instance);
+}
 } // traact

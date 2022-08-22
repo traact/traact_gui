@@ -1,13 +1,15 @@
 /** Copyright (C) 2022  Frieder Pankratz <frieder.pankratz@gmail.com> **/
 
+
 #include "DebugSceneWindow.h"
 #include "scene/component/RenderPointCloud.h"
 #include "scene/component/RenderCoordinateSystem.h"
 #include "scene/component/PoseSource.h"
 #include "scene/component/IdentityRotation.h"
+#include "scene/component/FileReaderWriter.h"
 
 #include "traact_gui/application_data/application_data.h"
-
+#include <traact/component/generic/FileReaderWriter.h>
 namespace traact::gui {
 DebugSceneWindow::DebugSceneWindow(const std::string &window_name,
                                    DebugRenderer *renderer) : DebugRenderComponent(100, 0, "invalid", window_name, renderer) {
@@ -39,6 +41,12 @@ DebugSceneWindow::DebugSceneWindow(const std::string &window_name,
 
 
 }
+
+DebugSceneWindow::~DebugSceneWindow() {
+    traact_app_data_.destroy();
+
+}
+
 void DebugSceneWindow::update(buffer::ComponentBuffer &buffer, std::vector<RenderCommand> &additional_commands) {
     window_.update();
 
@@ -53,11 +61,7 @@ void DebugSceneWindow::addDebugObject(const std::vector<std::string> &port_segme
     auto object_id = port_segmented[1];
     auto object_name = fmt::format("{0}", object_id);
 
-    auto object = window_.findObject(object_name);
-    if(!object){
-        object = window_.addObject(object_name);
-    }
-
+    auto object = window_.getObject(object_name);
 
     if(port_segmented[2] == "pointCloud"){
         addPointCloud(object, port_segmented, port);
@@ -68,7 +72,6 @@ void DebugSceneWindow::addDebugObject(const std::vector<std::string> &port_segme
     }
 
 }
-
 void DebugSceneWindow::addPointCloud(std::shared_ptr<scene::Object> scene_object,
                            const std::vector<std::string> &port_segmented,
                            pattern::instance::PortInstance::ConstPtr const &port) {
@@ -88,14 +91,12 @@ void DebugSceneWindow::addPointCloud(std::shared_ptr<scene::Object> scene_object
 
     }
 }
+
 void DebugSceneWindow::addPose(scene::Object::SharedPtr object,
                                const std::vector<std::string> &port_segmented,
                                pattern::instance::PortInstance::ConstPtr const &port) {
 
-    auto parent_object = window_.findObject(port_segmented[3]);
-    if(!parent_object){
-        parent_object = window_.addObject(port_segmented[3]);
-    }
+    auto parent_object = window_.getObject(port_segmented[3]);
 
     auto component = object->getComponent<scene::component::PoseSource>("pose_source");
     auto pose_source = traact_app_data_.addDataPort<application_data::PoseSource >(port);
@@ -109,8 +110,47 @@ void DebugSceneWindow::addPose(scene::Object::SharedPtr object,
 
 }
 
-DebugSceneWindow::~DebugSceneWindow() {
-    traact_app_data_.destroy();
+template<>
+void DebugSceneWindow::addDebugObject<std::shared_ptr<component::FileReaderWriterRead<spatial::Pose6DHeader>>>(const std::vector<std::string> &name_segmented, std::shared_ptr<component::FileReaderWriterRead<spatial::Pose6DHeader>>&pattern_instance) {
 
+    if(name_segmented.size() != 4){
+        SPDLOG_ERROR("naming of FileReaderWriterRead component must follow the scheme: scene_{targetID}_calibrationRead_{sourceID}");
+        return;
+    }
+    auto& target = name_segmented[1];
+    auto& source = name_segmented[3];
+    auto object = window_.getObject(target);
+    auto parent_object = window_.getObject(source);
+
+    auto component = object->getComponent<scene::component::FileReaderWriter>("file_reader_writer");
+    component->setReader(pattern_instance);
+
+    object->getTransform()->setParent(parent_object->getTransform());
+
+    auto coordinate_system = object->getComponent<scene::component::RenderCoordinateSystem>("coordinate_frame" );
+    coordinate_system->scale_ = 0.09;
 }
+
+template<>
+void DebugSceneWindow::addDebugObject<std::shared_ptr<component::FileReaderWriterWrite<spatial::Pose6DHeader>>>(const std::vector<std::string> &name_segmented, std::shared_ptr<component::FileReaderWriterWrite<spatial::Pose6DHeader>>&pattern_instance) {
+
+    if(name_segmented.size() != 4){
+        SPDLOG_ERROR("naming of FileReaderWriterRead component must follow the scheme: scene_{targetID}_calibrationRead_{sourceID}");
+        return;
+    }
+    auto& target = name_segmented[1];
+    auto& source = name_segmented[3];
+    auto object = window_.getObject(target);
+    auto parent_object = window_.getObject(source);
+
+    auto component = object->getComponent<scene::component::FileReaderWriter>("file_reader_writer");
+    component->setWriter(pattern_instance);
+
+    object->getTransform()->setParent(parent_object->getTransform());
+
+    auto coordinate_system = object->getComponent<scene::component::RenderCoordinateSystem>("coordinate_frame" );
+    coordinate_system->scale_ = 0.09;
+}
+
+
 } // traact

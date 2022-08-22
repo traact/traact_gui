@@ -248,6 +248,13 @@ Object::SharedPtr Window::addObject(const std::string &object_name) {
     objects_.emplace(object_name, object);
     return object;
 }
+Object::SharedPtr Window::getObject(const std::string &object_name) {
+    auto object = findObject(object_name);
+    if(!object){
+        object = addObject(object_name);
+    }
+    return object;
+}
 void Window::updateWindowFlags() {
     if(ImGuizmo::IsOver() || ImGuizmo::IsUsing()) {
         window_flags_ =  ImGuiWindowFlags_NoMove;
