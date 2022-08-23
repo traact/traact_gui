@@ -33,6 +33,8 @@ void DebugRenderer::init(DefaultFacade &facade, const std::string &debug_sink_id
     auto calib_reads = facade.findComponents<component::FileReaderWriterRead<spatial::Pose6DHeader>>();
     auto calib_writes = facade.findComponents<component::FileReaderWriterWrite<spatial::Pose6DHeader>>();
 
+
+
     for(auto& pattern_instance : calib_reads){
         addSceneObject(pattern_instance);
     }

@@ -88,6 +88,8 @@ void RenderPointCloud::update() {
 
 void RenderPointCloud::draw() {
 
+
+
     if (!render_initialized_) {
         shader_.init(kVertexShader, kFragmentShader);
 

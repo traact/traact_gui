@@ -7,6 +7,7 @@
 #include <traact/util/CircularBuffer.h>
 #include "traact_gui/DataflowFile.h"
 #include "traact_gui/SelectedTraactElement.h"
+#include <stack>
 
 namespace traact::gui::state {
 
