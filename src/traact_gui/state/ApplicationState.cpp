@@ -2,6 +2,7 @@
 
 #include "ApplicationState.h"
 #include "external/ImFileDialog/ImFileDialog.h"
+#include <fstream>
 
 namespace traact::gui::state {
 

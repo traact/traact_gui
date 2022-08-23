@@ -4,8 +4,9 @@
 #define TRAACT_GUI_SRC_TRAACT_GUI_STATE_OPENFILES_H_
 
 #include <vector>
-
 #include <traact/util/CircularBuffer.h>
+#include <string>
+
 namespace traact::gui::state {
 
 struct OpenFiles{
