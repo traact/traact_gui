@@ -1,5 +1,7 @@
 /** Copyright (C) 2022  Frieder Pankratz <frieder.pankratz@gmail.com> **/
 
+#include <iostream>
+#include <fstream>
 #include "DataflowFile.h"
 #include "traact_gui/editor/EditorUtils.h"
 #include <spdlog/spdlog.h>
