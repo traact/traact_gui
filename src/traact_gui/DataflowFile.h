@@ -11,6 +11,7 @@
 #include <traact_gui/editor/PatternGraphEditor.h>
 
 #include "SelectedTraactElement.h"
+#include <stack>
 
 namespace traact::gui {
 
