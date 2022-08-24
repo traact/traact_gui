@@ -258,7 +258,7 @@ static inline void drawCoordinateFrame(glm::mat4 world2model, float scale) {
     // x
     glColor3f(1.0, 0.0, 0.0);
     glBegin(GL_LINES);
-    glVertex3f(-1.0 * scale, 0.0f, 0.0f);
+    glVertex3f(-0.0 * scale, 0.0f, 0.0f);
     glVertex3f(1.0 * scale, 0.0f, 0.0f);
 
     glVertex3f(1.0 * scale, 0.0f, 0.0f);
@@ -271,7 +271,7 @@ static inline void drawCoordinateFrame(glm::mat4 world2model, float scale) {
     // y
     glColor3f(0.0, 1.0, 0.0);
     glBegin(GL_LINES);
-    glVertex3f(0.0, -1.0f * scale, 0.0f);
+    glVertex3f(0.0, -0.0f * scale, 0.0f);
     glVertex3f(0.0, 1.0f * scale, 0.0f);
 
     glVertex3f(0.0, 1.0f * scale, 0.0f);
@@ -284,7 +284,7 @@ static inline void drawCoordinateFrame(glm::mat4 world2model, float scale) {
     // z
     glColor3f(0.0, 0.0, 1.0);
     glBegin(GL_LINES);
-    glVertex3f(0.0, 0.0f, -1.0f * scale);
+    glVertex3f(0.0, 0.0f, -0.0f * scale);
     glVertex3f(0.0, 0.0f, 1.0f * scale);
 
     glVertex3f(0.0, 0.0f, 1.0f * scale);
