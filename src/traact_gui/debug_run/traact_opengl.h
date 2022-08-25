@@ -28,7 +28,8 @@ static const constexpr GLint getOpenGl(vision::PixelFormat pixel_format) {
         case vision::PixelFormat::YUV411:
         case vision::PixelFormat::RAW:
         case vision::PixelFormat::MJPEG:
-        case vision::PixelFormat::UNKNOWN_PIXELFORMAT:return GL_INVALID_ENUM;
+        case vision::PixelFormat::UNKNOWN_PIXELFORMAT:
+        default:return GL_INVALID_ENUM;
     }
 }
 
@@ -43,7 +44,8 @@ static const constexpr GLint getOpenGl(BaseType data_type) {
         case FLOAT_16:return GL_HALF_FLOAT;
         case FLOAT_32:return GL_FLOAT;
         case FLOAT_64:return GL_DOUBLE;
-        case UNKNOWN: return GL_INVALID_ENUM;
+        case UNKNOWN:
+        default:return GL_INVALID_ENUM;
 
     }
 }
@@ -58,7 +60,8 @@ static const constexpr GLint getOpenGlInternalLuminanceFormat(BaseType data_type
         case FLOAT_16:return GL_LUMINANCE16F_ARB;
         case FLOAT_32:return GL_LUMINANCE32F_ARB;
         case FLOAT_64:
-        case UNKNOWN: return GL_INVALID_ENUM;
+        case UNKNOWN:
+        default: return GL_INVALID_ENUM;
     }
 }
 
@@ -72,7 +75,8 @@ static const constexpr GLint getOpenGlInternalRgbFormat(BaseType data_type) {
         case FLOAT_16:return GL_RGB16F;
         case FLOAT_32:return GL_RGB32F;
         case FLOAT_64:
-        case UNKNOWN: return GL_INVALID_ENUM;
+        case UNKNOWN:
+        default:return GL_INVALID_ENUM;
     }
 }
 
@@ -86,7 +90,8 @@ static const constexpr GLint getOpenGlInternalRgbaFormat(BaseType data_type) {
         case FLOAT_16:return GL_RGBA16F;
         case FLOAT_32:return GL_RGBA32F;
         case FLOAT_64:
-        case UNKNOWN: return GL_INVALID_ENUM;
+        case UNKNOWN:
+        default:return GL_INVALID_ENUM;
     }
 }
 
@@ -100,7 +105,8 @@ static const constexpr GLint getOpenGlInternalRFormat(BaseType data_type) {
         case FLOAT_16:return GL_R16F;
         case FLOAT_32:return GL_R32F;
         case FLOAT_64:
-        case UNKNOWN: return GL_INVALID_ENUM;
+        case UNKNOWN:
+        default:return GL_INVALID_ENUM;
     }
 }
 static const constexpr GLint getOpenGlInternalFloatFormat(BaseType data_type, int channels) {
@@ -133,7 +139,8 @@ static const constexpr GLint getOpenGlInternalFormat(BaseType data_type, vision:
         case vision::PixelFormat::YUV411:
         case vision::PixelFormat::RAW:
         case vision::PixelFormat::MJPEG:
-        case vision::PixelFormat::UNKNOWN_PIXELFORMAT:return GL_INVALID_ENUM;
+        case vision::PixelFormat::UNKNOWN_PIXELFORMAT:
+        default: return GL_INVALID_ENUM;
     }
 }
 
@@ -147,7 +154,8 @@ static const constexpr GLint getOpenGlLuminanceFormat(BaseType data_type) {
         case FLOAT_16:
         case FLOAT_32:return GL_LUMINANCE;
         case FLOAT_64:
-        case UNKNOWN: return GL_INVALID_ENUM;
+        case UNKNOWN:
+        default:return GL_INVALID_ENUM;
     }
 }
 
@@ -161,7 +169,8 @@ static const constexpr GLint getOpenGlRgbFormat(BaseType data_type) {
         case FLOAT_16:
         case FLOAT_32:return GL_RGB;
         case FLOAT_64:
-        case UNKNOWN: return GL_INVALID_ENUM;
+        case UNKNOWN:
+        default:return GL_INVALID_ENUM;
     }
 }
 
@@ -175,7 +184,8 @@ static const constexpr GLint getOpenGlRgbaFormat(BaseType data_type) {
         case FLOAT_16:
         case FLOAT_32:return GL_RGBA;
         case FLOAT_64:
-        case UNKNOWN: return GL_INVALID_ENUM;
+        case UNKNOWN:
+        default:return GL_INVALID_ENUM;
     }
 }
 static const constexpr GLint getOpenGlRFormat(BaseType data_type) {
@@ -188,7 +198,8 @@ static const constexpr GLint getOpenGlRFormat(BaseType data_type) {
         case FLOAT_16:
         case FLOAT_32:return GL_R;
         case FLOAT_64:
-        case UNKNOWN: return GL_INVALID_ENUM;
+        case UNKNOWN:
+        default:return GL_INVALID_ENUM;
     }
 }
 
@@ -222,7 +233,8 @@ static const constexpr GLint getOpenGlFormat(BaseType data_type, vision::PixelFo
         case vision::PixelFormat::YUV411:
         case vision::PixelFormat::RAW:
         case vision::PixelFormat::MJPEG:
-        case vision::PixelFormat::UNKNOWN_PIXELFORMAT:return GL_INVALID_ENUM;
+        case vision::PixelFormat::UNKNOWN_PIXELFORMAT:
+        default:return GL_INVALID_ENUM;
     }
 }
 
