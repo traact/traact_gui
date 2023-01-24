@@ -1,4 +1,4 @@
-﻿//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // LICENSE
 //   This software is dual-licensed to the public domain and under the following
 //   license: you are granted a perpetual, irrevocable license to copy, modify,
@@ -11,7 +11,7 @@
 
 
 //------------------------------------------------------------------------------
-# include "external/imgui-node-editor/imgui_node_editor.h"
+# include <imgui_node_editor.h>
 
 
 //------------------------------------------------------------------------------

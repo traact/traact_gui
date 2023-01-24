@@ -4,11 +4,11 @@ from conans import ConanFile, CMake, tools
 
 
 class Traact(ConanFile):
-    name = "traact_gui"
+    name = "traact"
     version = "0.0.1"
     
     description = "GUI Editor for Traact"
-    url = "https://github.com/traact/traact_gui.git"
+    url = "https://github.com/traact/traact.git"
     license = "MIT"
     author = "Frieder Pankratz"
 
@@ -55,13 +55,14 @@ class Traact(ConanFile):
         self.requires("implot/0.13")
         self.requires("stb/cci.20210910")
         self.requires("nodesoup/cci.20200905")
-        self.requires("open3d/0.15.0r1@camposs/stable")
+        self.requires("open3d/0.16.1@camposs/stable")
         self.requires("glm/cci.20220420")
-        #self.requires("magnum/2020.06-r1@camposs/stable")
-        #self.requires("corrade/2020.06@camposs/stable")
-        #self.requires("magnum-integration/2020.06@camposs/stable")
-        #self.requires("magnum-plugins/2020.06@camposs/stable")
-        #self.requires("zlib/1.2.12")
+        self.requires("magnum/2020.06-r1@camposs/stable")
+        self.requires("corrade/2020.06@camposs/stable")
+        self.requires("magnum-integration/2020.06@camposs/stable")
+        self.requires("magnum-plugins/2020.06@camposs/stable")
+        self.requires("zlib/1.2.13")
+        self.requires("re2/20220601")
 
 
     def imports(self):

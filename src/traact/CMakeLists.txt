@@ -1,0 +1,15 @@
+add_imgui_executable(traact
+        main.cpp
+        ../external/imgui-node-editor/utilities/builders.h
+        ../external/imgui-node-editor/utilities/drawing.h
+        ../external/imgui-node-editor/utilities/widgets.h
+        ../external/imgui-node-editor/utilities/builders.cpp
+        ../external/imgui-node-editor/utilities/drawing.cpp
+        ../external/imgui-node-editor/utilities/widgets.cpp
+        windows/PatternTree.h
+        windows/PatternTree.cpp
+        app/TraactGuiApp.h
+        app/TraactGuiApp.cpp
+        windows/SRG_DFG_Window.h
+        windows/SRG_DFG_Window.cpp
+        )

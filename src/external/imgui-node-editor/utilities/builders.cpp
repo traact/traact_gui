@@ -115,17 +115,17 @@ void util::BlueprintNodeBuilder::Input(ed::PinId id)
 
     SetStage(Stage::Input);
 
-    if (applyPadding)
-        ImGui::Spring(0);
+//    if (applyPadding)
+//        ImGui::Spring(0);
 
     Pin(id, PinKind::Input);
 
-    ImGui::BeginHorizontal(id.AsPointer());
+    //ImGui::BeginHorizontal(id.AsPointer());
 }
 
 void util::BlueprintNodeBuilder::EndInput()
 {
-    ImGui::EndHorizontal();
+    //ImGui::EndHorizontal();
 
     EndPin();
 }
@@ -147,17 +147,17 @@ void util::BlueprintNodeBuilder::Output(ed::PinId id)
 
     SetStage(Stage::Output);
 
-    if (applyPadding)
-        ImGui::Spring(0);
+//    if (applyPadding)
+//        ImGui::Spring(0);
 
     Pin(id, PinKind::Output);
 
-    ImGui::BeginHorizontal(id.AsPointer());
+    //ImGui::BeginHorizontal(id.AsPointer());
 }
 
 void util::BlueprintNodeBuilder::EndOutput()
 {
-    ImGui::EndHorizontal();
+    //ImGui::EndHorizontal();
 
     EndPin();
 }
@@ -177,12 +177,12 @@ bool util::BlueprintNodeBuilder::SetStage(Stage stage)
             break;
 
         case Stage::Header:
-            ImGui::EndHorizontal();
+            //ImGui::EndHorizontal();
             HeaderMin = ImGui::GetItemRectMin();
             HeaderMax = ImGui::GetItemRectMax();
 
             // spacing between header and content
-            ImGui::Spring(0, ImGui::GetStyle().ItemSpacing.y * 2.0f);
+            //ImGui::Spring(0, ImGui::GetStyle().ItemSpacing.y * 2.0f);
 
             break;
 
@@ -192,8 +192,8 @@ bool util::BlueprintNodeBuilder::SetStage(Stage stage)
         case Stage::Input:
             ed::PopStyleVar(2);
 
-            ImGui::Spring(1, 0);
-            ImGui::EndVertical();
+            //ImGui::Spring(1, 0);
+            //ImGui::EndVertical();
 
             // #debug
             // ImGui::GetWindowDrawList()->AddRect(
@@ -202,7 +202,7 @@ bool util::BlueprintNodeBuilder::SetStage(Stage stage)
             break;
 
         case Stage::Middle:
-            ImGui::EndVertical();
+            //ImGui::EndVertical();
 
             // #debug
             // ImGui::GetWindowDrawList()->AddRect(
@@ -213,8 +213,8 @@ bool util::BlueprintNodeBuilder::SetStage(Stage stage)
         case Stage::Output:
             ed::PopStyleVar(2);
 
-            ImGui::Spring(1, 0);
-            ImGui::EndVertical();
+            //ImGui::Spring(1, 0);
+            //ImGui::EndVertical();
 
             // #debug
             // ImGui::GetWindowDrawList()->AddRect(
@@ -232,62 +232,62 @@ bool util::BlueprintNodeBuilder::SetStage(Stage stage)
     switch (stage)
     {
         case Stage::Begin:
-            ImGui::BeginVertical("node");
+            //ImGui::BeginVertical("node");
             break;
 
         case Stage::Header:
             HasHeader = true;
 
-            ImGui::BeginHorizontal("header");
+            //ImGui::BeginHorizontal("header");
             break;
 
         case Stage::Content:
-            if (oldStage == Stage::Begin)
-                ImGui::Spring(0);
-
-            ImGui::BeginHorizontal("content");
-            ImGui::Spring(0, 0);
+//            if (oldStage == Stage::Begin)
+//                ImGui::Spring(0);
+//
+//            ImGui::BeginHorizontal("content");
+//            ImGui::Spring(0, 0);
             break;
 
         case Stage::Input:
-            ImGui::BeginVertical("inputs", ImVec2(0, 0), 0.0f);
+            //ImGui::BeginVertical("inputs", ImVec2(0, 0), 0.0f);
 
             ed::PushStyleVar(ed::StyleVar_PivotAlignment, ImVec2(0, 0.5f));
             ed::PushStyleVar(ed::StyleVar_PivotSize, ImVec2(0, 0));
 
-            if (!HasHeader)
-                ImGui::Spring(1, 0);
+//            if (!HasHeader)
+//                ImGui::Spring(1, 0);
             break;
 
         case Stage::Middle:
-            ImGui::Spring(1);
-            ImGui::BeginVertical("middle", ImVec2(0, 0), 1.0f);
+//            ImGui::Spring(1);
+//            ImGui::BeginVertical("middle", ImVec2(0, 0), 1.0f);
             break;
 
         case Stage::Output:
-            if (oldStage == Stage::Middle || oldStage == Stage::Input)
-                ImGui::Spring(1);
-            else
-                ImGui::Spring(1, 0);
-            ImGui::BeginVertical("outputs", ImVec2(0, 0), 1.0f);
+//            if (oldStage == Stage::Middle || oldStage == Stage::Input)
+//                ImGui::Spring(1);
+//            else
+//                ImGui::Spring(1, 0);
+//            ImGui::BeginVertical("outputs", ImVec2(0, 0), 1.0f);
 
             ed::PushStyleVar(ed::StyleVar_PivotAlignment, ImVec2(1.0f, 0.5f));
             ed::PushStyleVar(ed::StyleVar_PivotSize, ImVec2(0, 0));
 
-            if (!HasHeader)
-                ImGui::Spring(1, 0);
+//            if (!HasHeader)
+//                ImGui::Spring(1, 0);
             break;
 
         case Stage::End:
-            if (oldStage == Stage::Input)
-                ImGui::Spring(1, 0);
-            if (oldStage != Stage::Begin)
-                ImGui::EndHorizontal();
+//            if (oldStage == Stage::Input)
+//                ImGui::Spring(1, 0);
+//            if (oldStage != Stage::Begin)
+//                ImGui::EndHorizontal();
             ContentMin = ImGui::GetItemRectMin();
             ContentMax = ImGui::GetItemRectMax();
 
             //ImGui::Spring(0);
-            ImGui::EndVertical();
+            //ImGui::EndVertical();
             NodeMin = ImGui::GetItemRectMin();
             NodeMax = ImGui::GetItemRectMax();
             break;

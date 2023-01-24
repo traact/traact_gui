@@ -108,4 +108,4 @@ endmacro()
 
 
 
-add_subdirectory(traact_gui)
+add_subdirectory(traact)
