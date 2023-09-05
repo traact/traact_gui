@@ -1,0 +1,45 @@
+name: Build Conan Pakages
+on:
+  push:
+    branches:
+      - 'releases/**'
+jobs:
+  conan_package:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-22.04 ]
+        include:
+          - os: ubuntu-22.04
+            python-arch: "x64"
+            python-version: "3.11.x"
+            install-headerfiles: true
+            prepare-python: true
+            conan_base_profile: "linux-gcc7-amd64"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@master
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: ${{ matrix.python-arch }}
+        if: matrix.prepare-python
+      - name: Install conan && conan package tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install conan
+      - name: Checkout package
+        uses: actions/checkout@v3
+        with:
+          path: main
+      - name: Export package
+        run: |
+          conan config install https://github.com/traact/bincrafters-config.git
+          conan export . --user traact --channel stable
+      - name: Upload Package
+        run: |
+          conan remote login -p ${{ secrets.TRAACT_ORG_CI_CAMPOSS_PASSWORD }} traact traact_ci
+          pkg_name=`conan inspect . | grep "^name:" | cut -d' ' -f2`
+          pkg_version=`conan inspect . | grep "^version:" | cut -d' ' -f2`
+          conan upload $pkg_name/$pkg_version@traact/latest -r traact -c

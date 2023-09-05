@@ -1,35 +1,13 @@
 cmake_minimum_required(VERSION 3.16)
 
-option(WITH_TESTS "Build Tests" ON)
+set(TARGET_NAME traact_gui)
 
-set(CMAKE_CXX_STANDARD 17)
+project(${TARGET_NAME} VERSION "0.0.0" LANGUAGES CXX)
 
-# conan is required hard, library name, version and description are configured from conan
-if (EXISTS ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-    include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
-else ()
-    message(FATAL_ERROR "The file conanbuildinfo.cmake doesn't exist, you have to run conan install first")
-endif ()
+find_package(traact_base)
+list(APPEND CMAKE_MODULE_PATH ${traact_base_INCLUDE_DIR})
 
-include(CheckLanguage)
-check_language(CUDA)
-enable_language(CUDA)
-if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-    set(CMAKE_CUDA_ARCHITECTURES 75)
-endif()
-
-if(NOT DEFINED CMAKE_CUDA_STANDARD)
-    set(CMAKE_CUDA_STANDARD 17)
-    set(CMAKE_CUDA_STANDARD_REQUIRED ON)
-endif()
-
-project(${CONAN_PACKAGE_NAME}_PROJECT VERSION ${CONAN_PACKAGE_VERSION} LANGUAGES CUDA CXX)
-
-conan_basic_setup(TARGETS)
-
-set(CMAKE_PREFIX_PATH ${CMAKE_CURRENT_BINARY_DIR})
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR})
-
+include(traact_default_library_setup)
 
 
 set(IMGUI_BINDING_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/imgui_bindings/imgui_impl_glfw.h
@@ -73,13 +51,6 @@ set(IMGUI_EXTERNAL_SOURCES src/external/ImFileDialog/ImFileDialog.h
         src/external/ImTerm/utils.hpp
 
         )
-
-#find_package(imgui CONFIG)
-#find_package(glfw3 CONFIG)
-#find_package(glew CONFIG)
-
-#add_subdirectory(external)
-#add_subdirectory(src)
 
 set(TRAACT_GUI_SRC
         src/traact/main.cpp
@@ -159,66 +130,139 @@ set(TRAACT_GUI_SRC
         src/traact/debug_run/scene/Transform.h
         src/traact/debug_run/DebugSceneWindow.cpp
         src/traact/debug_run/DebugSceneWindow.h
-        src/traact/window/WindowDetails.cpp src/traact/window/WindowDetails.h src/traact/window/WindowDataflow.cpp src/traact/window/WindowDataflow.h src/traact/debug_run/scene/component/RenderCoordinateSystem.cpp src/traact/debug_run/scene/component/RenderCoordinateSystem.h src/traact/debug_run/scene/component/PoseSource.cpp src/traact/debug_run/scene/component/PoseSource.h src/traact/application_data/ApplicationData.cpp src/traact/application_data/ApplicationData.h src/traact/application_data/source/RawSource.cpp src/traact/application_data/source/RawSource.h src/traact/application_data/DataPort.cpp src/traact/application_data/DataPort.h src/traact/application_data/application_data.h src/traact/application_data/source/OpenGlTextureSource.cpp src/traact/application_data/source/OpenGlTextureSource.h src/traact/debug_run/scene/component/IdentityRotation.cpp src/traact/debug_run/scene/component/IdentityRotation.h src/traact/debug_run/scene/component/FileReaderWriter.cpp src/traact/debug_run/scene/component/FileReaderWriter.h src/traact/debug_run/scene/component/StaticPose.cpp src/traact/debug_run/scene/component/StaticPose.h src/traact/debug_run/magnum/Window.cpp src/traact/debug_run/magnum/Window.h src/traact/opengl/Framebuffer.cpp src/traact/opengl/Framebuffer.h src/traact/debug_run/magnum/feature/DrawTriangle.cpp src/traact/debug_run/magnum/feature/DrawTriangle.h src/traact/debug_run/magnum/magnum_definitions.h src/traact/state/project/Graph.cpp src/traact/state/project/Graph.h src/traact/state/project/pattern/Pattern.cpp src/traact/state/project/pattern/Pattern.h src/traact/state/project/Project.cpp src/traact/state/project/Project.h src/traact/state/project/graph/Node.cpp src/traact/state/project/graph/Node.h src/traact/state/project/graph/Edge.cpp src/traact/state/project/graph/Edge.h src/traact/state/project/pattern/CompositePattern.cpp src/traact/state/project/pattern/CompositePattern.h src/traact/state/project/pattern/PatternInstance.cpp src/traact/state/project/pattern/PatternInstance.h src/traact/window/OpenProjects.cpp src/traact/window/OpenProjects.h src/traact/state/project/pattern/FacadePatternFactory.cpp src/traact/state/project/pattern/FacadePatternFactory.h src/traact/state/project/pattern/PatternFactory.h src/traact/state/project/pattern/GlobalPatternFactory.cpp src/traact/state/project/pattern/GlobalPatternFactory.h src/traact/state/project/pattern/PatternInfo.cpp src/traact/state/project/pattern/PatternInfo.h src/traact/imgui_util.h src/traact/imgui_gl_util.cpp src/traact/imgui_gl_util.h src/external/ImTerm/charconv_replacement.h src/external/ImTerm/charconv_replacement.cpp src/traact/window/WindowLog.cpp src/traact/window/WindowLog.h src/traact/window/WindowPatterns.cpp src/traact/window/WindowPatterns.h src/traact/debug_run/DataflowProfileWindow.cpp src/traact/debug_run/DataflowProfileWindow.h)
+        src/traact/window/WindowDetails.cpp
+        src/traact/window/WindowDetails.h
+        src/traact/window/WindowDataflow.cpp
+        src/traact/window/WindowDataflow.h
+        src/traact/debug_run/scene/component/RenderCoordinateSystem.cpp
+        src/traact/debug_run/scene/component/RenderCoordinateSystem.h
+        src/traact/debug_run/scene/component/PoseSource.cpp
+        src/traact/debug_run/scene/component/PoseSource.h
+        src/traact/application_data/ApplicationData.cpp
+        src/traact/application_data/ApplicationData.h
+        src/traact/application_data/source/RawSource.cpp
+        src/traact/application_data/source/RawSource.h
+        src/traact/application_data/DataPort.cpp
+        src/traact/application_data/DataPort.h
+        src/traact/application_data/application_data.h
+        src/traact/application_data/source/OpenGlTextureSource.cpp
+        src/traact/application_data/source/OpenGlTextureSource.h
+        src/traact/debug_run/scene/component/IdentityRotation.cpp
+        src/traact/debug_run/scene/component/IdentityRotation.h
+        src/traact/debug_run/scene/component/FileReaderWriter.cpp
+        src/traact/debug_run/scene/component/FileReaderWriter.h
+        src/traact/debug_run/scene/component/StaticPose.cpp
+        src/traact/debug_run/scene/component/StaticPose.h
+        src/traact/opengl/Framebuffer.cpp
+        src/traact/opengl/Framebuffer.h
+        #src/traact/debug_run/magnum/Window.cpp
+        #src/traact/debug_run/magnum/Window.h
+        #src/traact/debug_run/magnum/feature/DrawTriangle.cpp
+        #src/traact/debug_run/magnum/feature/DrawTriangle.h
+        #src/traact/debug_run/magnum/magnum_definitions.h
+        src/traact/state/project/Graph.cpp
+        src/traact/state/project/Graph.h
+        src/traact/state/project/pattern/Pattern.cpp
+        src/traact/state/project/pattern/Pattern.h
+        src/traact/state/project/Project.cpp
+        src/traact/state/project/Project.h
+        src/traact/state/project/graph/Node.cpp
+        src/traact/state/project/graph/Node.h
+        src/traact/state/project/graph/Edge.cpp
+        src/traact/state/project/graph/Edge.h
+        src/traact/state/project/pattern/CompositePattern.cpp
+        src/traact/state/project/pattern/CompositePattern.h
+        src/traact/state/project/pattern/PatternInstance.cpp
+        src/traact/state/project/pattern/PatternInstance.h
+        src/traact/window/OpenProjects.cpp
+        src/traact/window/OpenProjects.h
+        src/traact/state/project/pattern/FacadePatternFactory.cpp
+        src/traact/state/project/pattern/FacadePatternFactory.h
+        src/traact/state/project/pattern/PatternFactory.h
+        src/traact/state/project/pattern/GlobalPatternFactory.cpp
+        src/traact/state/project/pattern/GlobalPatternFactory.h
+        src/traact/state/project/pattern/PatternInfo.cpp
+        src/traact/state/project/pattern/PatternInfo.h
+        src/traact/imgui_util.h
+        src/traact/imgui_gl_util.cpp
+        src/traact/imgui_gl_util.h
+        src/external/ImTerm/charconv_replacement.h
+        src/external/ImTerm/charconv_replacement.cpp
+        src/traact/window/WindowLog.cpp
+        src/traact/window/WindowLog.h
+        src/traact/window/WindowPatterns.cpp
+        src/traact/window/WindowPatterns.h
+        src/traact/debug_run/DataflowProfileWindow.cpp
+        src/traact/debug_run/DataflowProfileWindow.h)
 
-add_executable( ${CONAN_PACKAGE_NAME}
+add_executable( ${TARGET_NAME}
         ${TRAACT_GUI_SRC}
         ${IMGUI_BINDING_SOURCES}
         ${IMGUI_EXTERNAL_SOURCES} )
 
 include_directories(${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 
-add_custom_command(TARGET ${CONAN_PACKAGE_NAME}
+add_custom_command(TARGET ${TARGET_NAME}
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/src/assets/simple-shader.vs ${CMAKE_CURRENT_BINARY_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/src/assets/simple-shader.fs ${CMAKE_CURRENT_BINARY_DIR}/bin
         )
 
-target_compile_definitions(${CONAN_PACKAGE_NAME} PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
+target_compile_definitions(${TARGET_NAME} PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
 
-#conan_target_link_libraries(${CONAN_PACKAGE_NAME} stdc++fs)
-#target_link_libraries(${CONAN_PACKAGE_NAME} imgui::imgui GLEW::glew_s glfw::glfw)
+
+find_package(traact_core REQUIRED)
+find_package(traact_spatial REQUIRED)
+find_package(traact_vision REQUIRED)
+find_package(traact_component_pointcloud REQUIRED)
 
 find_package(CUDAToolkit REQUIRED)
+find_package(imgui REQUIRED)
+find_package(glfw3 REQUIRED)
+find_package(glew REQUIRED)
+find_package(spdlog REQUIRED)
 
-target_link_libraries(${CONAN_PACKAGE_NAME} stdc++fs)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::spdlog)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::traact_core)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::traact_spatial)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::traact_vision)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::traact_component_pointcloud)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::opencv)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::glfw)
+find_package(OpenCV REQUIRED)
+find_package(ghc_filesystem REQUIRED)
+find_package(implot REQUIRED)
+find_package(stb REQUIRED)
+find_package(nodesoup REQUIRED)
+find_package(glm REQUIRED)
+find_package(imguizmo REQUIRED)
+find_package(open3d REQUIRED)
 
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::glew)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::ghc-filesystem)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::imgui)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::imguizmo)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::implot)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::stb)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::nodesoup)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::open3d)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::glm)
-
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::zlib)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::corrade)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::magnum)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::magnum-integration)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::magnum-plugins)
-target_link_libraries(${CONAN_PACKAGE_NAME} CONAN_PKG::re2)
-
-target_link_libraries(${CONAN_PACKAGE_NAME} CUDA::cudart)
+#find_package(Corrade REQUIRED)
+#find_package(magnum REQUIRED)
+#find_package(magnum-plugins REQUIRED)
+#find_package(magnum-integration REQUIRED)
+find_package(re2 REQUIRED)
 
 
-set_target_properties(${CONAN_PACKAGE_NAME} PROPERTIES VERSION ${CONAN_PACKAGE_VERSION})
-#set_target_properties(${CONAN_PACKAGE_NAME} PROPERTIES PUBLIC_HEADER "${LIB_HEADERS}")
 
-target_include_directories(${CONAN_PACKAGE_NAME} PUBLIC
+
+target_link_libraries(${TARGET_NAME} stdc++fs)
+target_link_libraries(${TARGET_NAME} spdlog::spdlog)
+target_link_libraries(${TARGET_NAME} traact_core::traact_core traact_spatial::traact_spatial traact_vision::traact_vision traact_component_pointcloud::traact_component_pointcloud)
+target_link_libraries(${TARGET_NAME} GLEW::GLEW glfw opencv::opencv)
+target_link_libraries(${TARGET_NAME} ghcFilesystem::ghc_filesystem  stb::stb nodesoup::nodesoup glm::glm open3d::open3d re2::re2)
+target_link_libraries(${TARGET_NAME} imgui::imgui implot::implot imguizmo::imguizmo)
+#target_link_libraries(${TARGET_NAME} corrade::corrade magnum::magnum magnum-integration::magnum-integration magnum-plugins::magnum-plugins)
+
+
+#target_link_libraries(${TARGET_NAME} CONAN_PKG::zlib)
+#target_link_libraries(${TARGET_NAME} CONAN_PKG::corrade)
+#target_link_libraries(${TARGET_NAME} CONAN_PKG::magnum)
+#target_link_libraries(${TARGET_NAME} CONAN_PKG::magnum-integration)
+#target_link_libraries(${TARGET_NAME} CONAN_PKG::magnum-plugins)
+#target_link_libraries(${TARGET_NAME} CONAN_PKG::re2)
+
+target_link_libraries(${TARGET_NAME} CUDA::cudart)
+
+
+target_include_directories(${TARGET_NAME} PUBLIC
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/imgui_bindings>
         ${CONAN_INCLUDE_DIRS_NLOHMANN_JSON}
         )
-target_include_directories(${CONAN_PACKAGE_NAME} PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${CMAKE_CURRENT_BINARY_DIR}/
-        )
+
+include(traact_default_library_final)

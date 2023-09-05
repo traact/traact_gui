@@ -65,6 +65,24 @@ void ax::NodeEditor::DestroyEditor(EditorContext* ctx)
         SetCurrentEditor(lastContext);
 }
 
+const ax::NodeEditor::Config& ax::NodeEditor::GetConfig(EditorContext* ctx)
+{
+    if (ctx == nullptr)
+        ctx = GetCurrentEditor();
+
+    if (ctx)
+    {
+        auto editor = reinterpret_cast<ax::NodeEditor::Detail::EditorContext*>(ctx);
+
+        return editor->GetConfig();
+    }
+    else
+    {
+        static Config s_EmptyConfig;
+        return s_EmptyConfig;
+    }
+}
+
 void ax::NodeEditor::SetCurrentEditor(EditorContext* ctx)
 {
     s_Editor = reinterpret_cast<ax::NodeEditor::Detail::EditorContext*>(ctx);
@@ -687,6 +705,16 @@ bool ax::NodeEditor::IsBackgroundClicked()
 bool ax::NodeEditor::IsBackgroundDoubleClicked()
 {
     return s_Editor->IsBackgroundDoubleClicked();
+}
+
+ImGuiMouseButton ax::NodeEditor::GetBackgroundClickButtonIndex()
+{
+    return s_Editor->GetBackgroundClickButtonIndex();
+}
+
+ImGuiMouseButton ax::NodeEditor::GetBackgroundDoubleClickButtonIndex()
+{
+    return s_Editor->GetBackgroundDoubleClickButtonIndex();
 }
 
 bool ax::NodeEditor::GetLinkPins(LinkId linkId, PinId* startPinId, PinId* endPinId)

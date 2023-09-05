@@ -91,7 +91,7 @@ void WindowPatterns::filterPatterns() {
 
         while (std::getline(filter_stream, segment, ' ')) {
             std::string regex_string = fmt::format("(?i){0}.*", segment);
-            SPDLOG_DEBUG("using pattern filter regex: {0}", filter_regex_string.str());
+            SPDLOG_DEBUG("using pattern filter regex: {0}", regex_string);
             re2::RE2 regex_filter(regex_string);
 
             if(regex_filter.ok()) {

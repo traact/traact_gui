@@ -101,8 +101,13 @@ bool ImGuiEx::Canvas::Begin(ImGuiID id, const ImVec2& size)
 
     UpdateViewTransformPosition();
 
+# if IMGUI_VERSION_NUM > 18415
     if (ImGui::IsClippedEx(m_WidgetRect, id))
         return false;
+# else
+    if (ImGui::IsClippedEx(m_WidgetRect, id, false))
+        return false;
+# endif
 
     // Save current channel, so we can assert when user
     // call canvas API with different one.
@@ -110,7 +115,7 @@ bool ImGuiEx::Canvas::Begin(ImGuiID id, const ImVec2& size)
 
     // #debug: Canvas content.
     //m_DrawList->AddRectFilled(m_StartPos, m_StartPos + m_CurrentSize, IM_COL32(0, 0, 0, 64));
-    m_DrawList->AddRect(m_WidgetRect.Min, m_WidgetRect.Max, IM_COL32(255, 0, 255, 64));
+    //m_DrawList->AddRect(m_WidgetRect.Min, m_WidgetRect.Max, IM_COL32(255, 0, 255, 64));
 
     ImGui::SetCursorScreenPos(ImVec2(0.0f, 0.0f));
 

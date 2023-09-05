@@ -21,6 +21,11 @@
 
 
 //------------------------------------------------------------------------------
+# define IMGUI_NODE_EDITOR_VERSION      "0.9.2"
+# define IMGUI_NODE_EDITOR_VERSION_NUM  000902
+
+
+//------------------------------------------------------------------------------
 namespace ax {
 namespace NodeEditor {
 
@@ -32,6 +37,27 @@ struct PinId;
 
 
 //------------------------------------------------------------------------------
+enum class PinKind
+{
+    Input,
+    Output
+};
+
+enum class FlowDirection
+{
+    Forward,
+    Backward
+};
+
+enum class CanvasSizeMode
+{
+    FitVerticalView,        // Previous view will be scaled to fit new view on Y axis
+    FitHorizontalView,      // Previous view will be scaled to fit new view on X axis
+    CenterOnly,             // Previous view will be centered on new view
+};
+
+
+//------------------------------------------------------------------------------
 enum class SaveReasonFlags: uint32_t
 {
     None       = 0x00000000,
@@ -39,7 +65,9 @@ enum class SaveReasonFlags: uint32_t
     Position   = 0x00000002,
     Size       = 0x00000004,
     Selection  = 0x00000008,
-    User       = 0x00000010
+    AddNode    = 0x00000010,
+    RemoveNode = 0x00000020,
+    User       = 0x00000040
 };
 
 inline SaveReasonFlags operator |(SaveReasonFlags lhs, SaveReasonFlags rhs) { return static_cast<SaveReasonFlags>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs)); }
@@ -55,6 +83,8 @@ using ConfigSession          = void   (*)(void* userPointer);
 
 struct Config
 {
+    using CanvasSizeModeAlias = ax::NodeEditor::CanvasSizeMode;
+
     const char*             SettingsFile;
     ConfigSession           BeginSaveSession;
     ConfigSession           EndSaveSession;
@@ -63,6 +93,8 @@ struct Config
     ConfigSaveNodeSettings  SaveNodeSettings;
     ConfigLoadNodeSettings  LoadNodeSettings;
     void*                   UserPointer;
+    ImVector<float>         CustomZoomLevels;
+    CanvasSizeModeAlias     CanvasSizeMode;
     int                     DragButtonIndex;        // Mouse button index drag action will react to (0-left, 1-right, 2-middle)
     int                     SelectButtonIndex;      // Mouse button index select action will react to (0-left, 1-right, 2-middle)
     int                     NavigateButtonIndex;    // Mouse button index navigate action will react to (0-left, 1-right, 2-middle)
@@ -77,26 +109,14 @@ struct Config
         , SaveNodeSettings(nullptr)
         , LoadNodeSettings(nullptr)
         , UserPointer(nullptr)
+        , CustomZoomLevels()
+        , CanvasSizeMode(CanvasSizeModeAlias::FitVerticalView)
         , DragButtonIndex(0)
         , SelectButtonIndex(0)
         , NavigateButtonIndex(1)
         , ContextMenuButtonIndex(1)
     {
     }
-};
-
-
-//------------------------------------------------------------------------------
-enum class PinKind
-{
-    Input,
-    Output
-};
-
-enum class FlowDirection
-{
-    Forward,
-    Backward
 };
 
 
@@ -113,6 +133,7 @@ enum StyleColor
     StyleColor_NodeSelRectBorder,
     StyleColor_HovLinkBorder,
     StyleColor_SelLinkBorder,
+    StyleColor_HighlightLinkBorder,
     StyleColor_LinkSelRect,
     StyleColor_LinkSelRectBorder,
     StyleColor_PinRect,
@@ -150,6 +171,8 @@ enum StyleVar
     StyleVar_PinArrowWidth,
     StyleVar_GroupRounding,
     StyleVar_GroupBorderWidth,
+    StyleVar_HighlightConnectedLinks,
+    StyleVar_SnapLinkToPinDir,
 
     StyleVar_Count
 };
@@ -179,6 +202,8 @@ struct Style
     float   PinArrowWidth;
     float   GroupRounding;
     float   GroupBorderWidth;
+    float   HighlightConnectedLinks;
+    float   SnapLinkToPinDir; // when true link will start on the line defined by pin direction
     ImVec4  Colors[StyleColor_Count];
 
     Style()
@@ -210,6 +235,8 @@ struct Style
         PinArrowWidth           = 0.0f;
         GroupRounding           = 6.0f;
         GroupBorderWidth        = 1.0f;
+        HighlightConnectedLinks = 0.0f;
+        SnapLinkToPinDir        = 0.0f;
 
         Colors[StyleColor_Bg]                 = ImColor( 60,  60,  70, 200);
         Colors[StyleColor_Grid]               = ImColor(120, 120, 120,  40);
@@ -221,6 +248,7 @@ struct Style
         Colors[StyleColor_NodeSelRectBorder]  = ImColor(  5, 130, 255, 128);
         Colors[StyleColor_HovLinkBorder]      = ImColor( 50, 176, 255, 255);
         Colors[StyleColor_SelLinkBorder]      = ImColor(255, 176,  50, 255);
+        Colors[StyleColor_HighlightLinkBorder]= ImColor(204, 105,   0, 255);
         Colors[StyleColor_LinkSelRect]        = ImColor(  5, 130, 255,  64);
         Colors[StyleColor_LinkSelRectBorder]  = ImColor(  5, 130, 255, 128);
         Colors[StyleColor_PinRect]            = ImColor( 60, 180, 255, 100);
@@ -242,6 +270,7 @@ void SetCurrentEditor(EditorContext* ctx);
 EditorContext* GetCurrentEditor();
 EditorContext* CreateEditor(const Config* config = nullptr);
 void DestroyEditor(EditorContext* ctx);
+const Config& GetConfig(EditorContext* ctx = nullptr);
 
 Style& GetStyle();
 const char* GetStyleColorName(StyleColor colorIndex);
@@ -368,6 +397,8 @@ PinId GetDoubleClickedPin();
 LinkId GetDoubleClickedLink();
 bool IsBackgroundClicked();
 bool IsBackgroundDoubleClicked();
+ImGuiMouseButton GetBackgroundClickButtonIndex(); // -1 if none
+ImGuiMouseButton GetBackgroundDoubleClickButtonIndex(); // -1 if none
 
 bool GetLinkPins(LinkId linkId, PinId* startPinId, PinId* endPinId); // pass nullptr if particular pin do not interest you
 

@@ -198,7 +198,7 @@ void MainApp::initWindows() {
     traact_app_.addWindow(std::make_shared<window::WindowDataflow>(application_state_));
     traact_app_.addWindow(std::make_shared<window::WindowRun>(application_state_));
     traact_app_.addWindow(std::make_shared<window::WindowLog>(application_state_));
-    traact_app_.addWindow(std::make_shared<window::WindowPatterns>(application_state_));
+    //traact_app_.addWindow(std::make_shared<window::WindowPatterns>(application_state_));
 
     auto details_window = std::make_shared<window::WindowDetails>(application_state_);
     traact_app_.addWindow(details_window);
