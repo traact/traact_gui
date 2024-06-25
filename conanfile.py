@@ -72,7 +72,7 @@ class TraactPackage(ConanFile):
 
         self.requires("re2/20230801")
 
-        self.requires("traact_component_pointcloud/0.0.0@traact/latest")
+        self.requires("traact_pointcloud/0.0.0@traact/latest")
         
         #self.requires("traact_component_basic/1.0.0@traact/latest")
         #self.requires("traact_component_kinect_azure/1.0.0@traact/latest")
