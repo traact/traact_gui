@@ -62,7 +62,7 @@ class TraactPackage(ConanFile):
         self.requires("implot/0.16")
         self.requires("stb/cci.20220909")
         self.requires("nodesoup/cci.20200905")
-        self.requires("open3d/0.17.0@camposs/stable")
+        self.requires("open3d/0.18.0@camposs/stable")
         self.requires("glm/0.9.9.8")
         self.requires("pcpd_shm_client/0.4.0@artekmed/stable", run=True)
         self.requires("openssl/1.1.1t", force=True)
