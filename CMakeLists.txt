@@ -222,6 +222,8 @@ find_package(glfw3 REQUIRED)
 find_package(glew REQUIRED)
 find_package(spdlog REQUIRED)
 
+find_package(pcpd_shm_client CONFIG REQUIRED)
+
 find_package(OpenCV REQUIRED)
 find_package(ghc_filesystem REQUIRED)
 find_package(implot REQUIRED)
@@ -245,7 +247,7 @@ target_link_libraries(${TARGET_NAME} spdlog::spdlog)
 target_link_libraries(${TARGET_NAME} traact_core::traact_core traact_spatial::traact_spatial traact_vision::traact_vision traact_pointcloud::traact_pointcloud)
 target_link_libraries(${TARGET_NAME} GLEW::GLEW glfw opencv::opencv)
 target_link_libraries(${TARGET_NAME} ghcFilesystem::ghc_filesystem  stb::stb nodesoup::nodesoup glm::glm open3d::open3d re2::re2)
-target_link_libraries(${TARGET_NAME} imgui::imgui implot::implot imguizmo::imguizmo)
+target_link_libraries(${TARGET_NAME} imgui::imgui implot::implot imguizmo::imguizmo pcpd_shm_client::pcpd_shm_client)
 #target_link_libraries(${TARGET_NAME} corrade::corrade magnum::magnum magnum-integration::magnum-integration magnum-plugins::magnum-plugins)
 
 

@@ -3,7 +3,11 @@
 #include <signal.h>
 #include <opencv2/core/utility.hpp>
 #include <traact/util/Logging.h>
+#include <pcpd_shm/shm_runtime.h>
+
 std::atomic_bool should_stop{false};
+
+std::unique_ptr<pcpd::dataflow::ShmRuntime> m_shm_runtime_;
 
 void ctrlC(int i) {
     SPDLOG_INFO("User requested exit (Ctrl-C).");
@@ -45,8 +49,13 @@ int main(int argc, char** argv)
     return 0;
 }
 
+
 void runApp(std::optional<std::string> &dataflow_file) {
     try{
+    
+	m_shm_runtime_ = std::make_unique<pcpd::dataflow::ShmRuntime>();
+        m_shm_runtime_->initRuntime("traact");
+    
         traact::gui::MainApp app(should_stop);
 
         if(dataflow_file.has_value()){

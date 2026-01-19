@@ -52,8 +52,7 @@ class TraactPackage(ConanFile):
         self.requires("traact_core/0.0.0@traact/latest")
         self.requires("traact_spatial/0.0.0@traact/latest")
         self.requires("traact_vision/0.0.0@traact/latest")
-
-        self.requires("cuda_dev_config/[>=2.0]@camposs/stable")        
+        self.requires("cuda_dev_config/2.2@camposs/stable", override=True)
         self.requires("opencv/4.8.0@camposs/stable")
         self.requires("glfw/3.3.8")
         self.requires("glew/2.2.0")
@@ -65,6 +64,8 @@ class TraactPackage(ConanFile):
         self.requires("nodesoup/cci.20200905")
         self.requires("open3d/0.17.0@camposs/stable")
         self.requires("glm/0.9.9.8")
+        self.requires("pcpd_shm_client/0.4.0@artekmed/stable", run=True)
+        self.requires("openssl/1.1.1t", force=True)
         #self.requires("magnum/2020.06@camposs/stable")
         #self.requires("corrade/2020.06@camposs/stable")
         #self.requires("magnum-integration/2020.06@camposs/stable")
@@ -99,7 +100,13 @@ class TraactPackage(ConanFile):
         self.options['traact_vision'].shared = self.options.shared
         self.options['glfw'].shared = self.options.shared
         self.options['glew'].shared = self.options.shared
+        self.options['pcpd_shm_client'].with_python = False
+        self.options['pcpd_shm_client'].with_visualization = False
+        self.options['pcpd_shm_client'].with_apps = False
+        self.options['pcpd_shm_client'].shared = False
+        #self.options['tcn_schema'].with_dds = True
         #self.options['open3d'].with_visualization = True
+
 
 
 
